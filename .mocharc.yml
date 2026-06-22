@@ -1,0 +1,4 @@
+ui: bdd
+timeout: 5000
+recursive: true
+spec: out/test/unit/**/*.test.js

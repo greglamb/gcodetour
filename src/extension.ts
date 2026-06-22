@@ -4,6 +4,7 @@
 import { configure } from "mobx";
 import * as vscode from "vscode";
 import { initializeApi } from "./api";
+import { hasUpstreamConflict, UPSTREAM_EXTENSION_ID } from "./conflict";
 import { initializeGitApi } from "./git";
 import { registerLiveShareModule } from "./liveShare";
 import { registerPlayerModule } from "./player";
@@ -79,6 +80,28 @@ export async function activate(context: vscode.ExtensionContext) {
   // Isolate this extension's MobX instance from any other copies of MobX
   // that might be loaded in the same extension host process.
   configure({ isolateGlobalState: true });
+
+  // gCodeTour shares the original CodeTour's command/view IDs, so the two can't
+  // coexist (duplicate command registration throws). If the original is also
+  // installed, warn and skip registering our contributions.
+  if (hasUpstreamConflict(id => vscode.extensions.getExtension(id))) {
+    const showExtensions = "Show Extensions";
+    vscode.window
+      .showWarningMessage(
+        `gCodeTour can't run alongside the original CodeTour extension (${UPSTREAM_EXTENSION_ID}) — ` +
+          "they share the same command and view IDs. Disable one of them, then reload the window.",
+        showExtensions
+      )
+      .then(choice => {
+        if (choice === showExtensions) {
+          vscode.commands.executeCommand(
+            "workbench.extensions.search",
+            "@installed codetour"
+          );
+        }
+      });
+    return;
+  }
 
   registerPlayerModule(context);
   registerRecorderModule();

@@ -1,20 +1,27 @@
 {
   "name": "codetour",
-  "displayName": "CodeTour",
+  "displayName": "gCodeTour",
   "description": "VS Code extension that allows you to record and playback guided tours of codebases, directly within the editor",
-  "publisher": "vsls-contrib",
-  "version": "0.0.61",
+  "publisher": "greglamb",
+  "version": "0.2606.2201",
   "author": {
     "name": "Microsoft Corporation"
   },
+  "contributors": [
+    {
+      "name": "Greg Lamb",
+      "email": "email@greglamb.dev",
+      "url": "https://github.com/greglamb"
+    }
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/codetour"
+    "url": "https://github.com/greglamb/gcodetour"
   },
   "bugs": {
-    "url": "https://github.com/microsoft/codetour/issues"
+    "url": "https://github.com/greglamb/gcodetour/issues"
   },
-  "homepage": "https://github.com/microsoft/codetour#readme",
+  "homepage": "https://github.com/greglamb/gcodetour#readme",
   "license": "MIT",
   "icon": "images/icon.png",
   "engines": {
@@ -39,7 +46,7 @@
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "CodeTour",
+      "title": "gCodeTour",
       "properties": {
         "codetour.promptForWorkspaceTours": {
           "type": "boolean",
@@ -71,15 +78,15 @@
       {
         "command": "codetour.addContentStep",
         "title": "Add Tour Step",
-        "category": "CodeTour"
+        "category": "gCodeTour"
       },
       {
         "command": "codetour.addDirectoryStep",
-        "title": "Add CodeTour Step"
+        "title": "Add gCodeTour Step"
       },
       {
         "command": "codetour.addSelectionStep",
-        "title": "Add CodeTour Step"
+        "title": "Add gCodeTour Step"
       },
       {
         "command": "codetour.addTourStep",
@@ -112,7 +119,7 @@
       {
         "command": "codetour.resetProgress",
         "title": "Reset Progress",
-        "category": "CodeTour"
+        "category": "gCodeTour"
       },
       {
         "command": "codetour.resetTourProgress",
@@ -133,13 +140,13 @@
       {
         "command": "codetour.editTour",
         "title": "Edit Tour",
-        "category": "CodeTour",
+        "category": "gCodeTour",
         "icon": "$(edit)"
       },
       {
         "command": "codetour.endTour",
         "title": "End Tour",
-        "category": "CodeTour",
+        "category": "gCodeTour",
         "icon": "$(primitive-square)"
       },
       {
@@ -149,7 +156,7 @@
       {
         "command": "codetour.hideMarkers",
         "title": "Hide Tour Markers",
-        "category": "CodeTour",
+        "category": "gCodeTour",
         "icon": "$(eye-closed)"
       },
       {
@@ -175,12 +182,12 @@
         "command": "codetour.openTourFile",
         "title": "Open Tour File...",
         "icon": "$(folder-opened)",
-        "category": "CodeTour"
+        "category": "gCodeTour"
       },
       {
         "command": "codetour.openTourUrl",
         "title": "Open Tour URL...",
-        "category": "CodeTour"
+        "category": "gCodeTour"
       },
       {
         "command": "codetour.previewTour",
@@ -195,13 +202,13 @@
       {
         "command": "codetour.recordTour",
         "title": "Record Tour",
-        "category": "CodeTour",
+        "category": "gCodeTour",
         "icon": "$(add)"
       },
       {
         "command": "codetour.resumeTour",
         "title": "Resume Tour",
-        "category": "CodeTour"
+        "category": "gCodeTour"
       },
       {
         "command": "codetour.saveTourStep",
@@ -211,13 +218,13 @@
       {
         "command": "codetour.showMarkers",
         "title": "Show Tour Markers",
-        "category": "CodeTour",
+        "category": "gCodeTour",
         "icon": "$(eye)"
       },
       {
         "command": "codetour.startTour",
         "title": "Start Tour",
-        "category": "CodeTour",
+        "category": "gCodeTour",
         "icon": "$(play)"
       },
       {
@@ -227,7 +234,7 @@
       {
         "command": "codetour.viewNotebook",
         "title": "View Notebook",
-        "category": "CodeTour"
+        "category": "gCodeTour"
       }
     ],
     "menus": {
@@ -588,8 +595,8 @@
       "explorer": [
         {
           "id": "codetour.tours",
-          "name": "CodeTour",
-          "contextualTitle": "CodeTour",
+          "name": "gCodeTour",
+          "contextualTitle": "gCodeTour",
           "when": "workspaceFolderCount != 0 || codetour:inTour",
           "icon": "$(map)"
         }
@@ -598,7 +605,7 @@
     "viewsWelcome": [
       {
         "view": "codetour.tours",
-        "contents": "In order to create a guided walkthrough, you can begin recording a tour for the currently opened workspace ([Learn More](https://github.com/vsls-contrib/codetour#recording-tours)).\n\n[Record Tour](command:codetour.recordTour)\n\nYou can also open tours that were shared with you by others ([Learn More](https://github.com/vsls-contrib/codetour#opening-tours)).\n\n[Open Tour File](command:codetour.openTourFile)\n\n[Open Tour URL](command:codetour.openTourUrl)"
+        "contents": "In order to create a guided walkthrough, you can begin recording a tour for the currently opened workspace ([Learn More](https://github.com/greglamb/gcodetour#recording-tours)).\n\n[Record Tour](command:codetour.recordTour)\n\nYou can also open tours that were shared with you by others ([Learn More](https://github.com/greglamb/gcodetour#opening-tours)).\n\n[Open Tour File](command:codetour.openTourFile)\n\n[Open Tour URL](command:codetour.openTourUrl)"
       }
     ],
     "jsonValidation": [
@@ -644,7 +651,7 @@
     "notebookProvider": [
       {
         "viewType": "codetour",
-        "displayName": "CodeTour",
+        "displayName": "gCodeTour",
         "selector": [
           {
             "filenamePattern": "*.tour-notebook"
@@ -664,12 +671,25 @@
     "vsls": "^1.0.2532"
   },
   "devDependencies": {
+    "@greglamb/vscode-test-playwright": "github:greglamb/vscode-test-playwright",
+    "@playwright/test": "^1.49.0",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^18.14.0",
     "@types/throttle-debounce": "^5.0.0",
     "@types/vscode": "^1.102.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/test-web": "^0.0.80",
     "@vscode/vsce": "^3.6.0",
+    "c8": "^10.1.3",
     "debug": "^4.3.4",
+    "esbuild": "^0.25.0",
+    "esbuild-plugins-node-modules-polyfill": "^1.8.1",
     "eslint": "^8.34.0",
+    "mocha": "^11.1.0",
+    "prettier": "^3.3.0",
     "ts-loader": "^9.4.2",
     "typescript": "^4.9.5",
     "webpack": "^5.75.0",
@@ -680,7 +700,20 @@
     "build": "webpack --mode production",
     "vscode:prepublish": "npm run build",
     "watch": "webpack --mode development --watch",
-    "package": "vsce package"
+    "package": "vsce package",
+    "compile": "tsc -p ./",
+    "version:bump": "node scripts/bump-version.mjs",
+    "test": "npm run compile && npm run test:unit",
+    "test:unit": "c8 mocha",
+    "test:integration": "npm run compile && npm run build && vscode-test",
+    "test:ui": "npm run build && playwright test",
+    "build:web-test": "node esbuild.web-test.mjs",
+    "test:web": "npm run build && npm run build:web-test && vscode-test-web --browserType=chromium --extensionDevelopmentPath=. --extensionTestsPath=dist/test/web-integration/index.js ./test-fixtures/workspace",
+    "test:web:headless": "npm run test:web -- --headless",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"esbuild.web-test.mjs\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"esbuild.web-test.mjs\"",
+    "lint": "eslint src --ext ts",
+    "verify": "npm run format:check && npm run lint && npm run compile && npm run test:unit && npm run build"
   },
   "prettier": {
     "arrowParens": "avoid",

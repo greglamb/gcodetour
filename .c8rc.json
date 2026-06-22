@@ -1,0 +1,13 @@
+{
+  "include": [
+    "out/player/preview.js",
+    "out/tourLabels.js",
+    "out/conflict.js"
+  ],
+  "reporter": ["text"],
+  "check-coverage": true,
+  "statements": 90,
+  "branches": 80,
+  "functions": 90,
+  "lines": 90
+}

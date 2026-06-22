@@ -25,7 +25,7 @@ const changeWatcher = async (e: vscode.TextDocumentChangeEvent) => {
 
   await Promise.all(
     e.contentChanges.map(async () => {
-      for (let [tour, step, , line] of impactedSteps) {
+      for (const [tour, step, , line] of impactedSteps) {
         const changedText = e.document.lineAt(line!).text;
 
         // If the text is empty, then that means the user

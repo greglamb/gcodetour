@@ -174,7 +174,7 @@ export function registerRecorderCommands() {
     startCodeTour(tour, 0, workspaceRoot, true);
 
     vscode.window.showInformationMessage(
-      "CodeTour recording started! Begin creating steps by opening a file, clicking the + button to the left of a line of code, and then adding the appropriate comments."
+      "gCodeTour recording started! Begin creating steps by opening a file, clicking the + button to the left of a line of code, and then adding the appropriate comments."
     );
   }
 
@@ -429,7 +429,7 @@ export function registerRecorderCommands() {
 
       saveTour(tour);
 
-      let label = `Step #${stepNumber + 1} of ${tour.steps.length}`;
+      const label = `Step #${stepNumber + 1} of ${tour.steps.length}`;
 
       const contextValues = [];
       if (tour.steps.length > 1) {
@@ -856,7 +856,7 @@ export function registerRecorderCommands() {
     }
 
     const currentBranch = repository.state.HEAD!.name;
-    let items: GitRefQuickPickItem[] = [
+    const items: GitRefQuickPickItem[] = [
       {
         label: "$(circle-slash) None",
         description:

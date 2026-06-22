@@ -1,0 +1,48 @@
+{
+  "$schema": "https://raw.githubusercontent.com/greglamb/gcodetour/main/schema.json",
+  "title": "1 - Onboarding: Request Lifecycle",
+  "description": "How an HTTP request flows from entry point through routing to the data layer.",
+  "ref": "v2.4.0",
+  "isPrimary": true,
+  "nextTour": "2 - Background Jobs",
+  "steps": [
+    {
+      "title": "Welcome",
+      "description": "## Welcome to the codebase\n\nThis tour follows a single request end-to-end so you can build a mental model before diving in.\n\nWe'll cover, in order: app bootstrap, the HTTP layer, routing, a representative controller, and the data-access boundary.\n\nFirst, get it running locally:\n\n>> npm install && npm run dev\n\nUse `Cmd/Ctrl + →` to advance."
+    },
+    {
+      "file": "src/index.js",
+      "pattern": "const app = express\\(\\)",
+      "description": "### Bootstrap\n\nThe application instance is created here. Middleware and routers are attached below this line; tracing the order of `app.use(...)` calls tells you the request pipeline."
+    },
+    {
+      "file": "src/middleware/auth.js",
+      "pattern": "function authenticate",
+      "description": "### Authentication boundary\n\nEvery protected route passes through here. Note that it attaches `req.user` — downstream controllers assume that's populated, so this is the trust boundary for the whole app."
+    },
+    {
+      "file": "src/routes/orders.js",
+      "pattern": "router\\.post\\(['\"]/['\"]",
+      "description": "### Routing\n\nRoutes are thin: they validate input and delegate to a controller. Keep an eye on the controller import at the top of the file — that's the next stop.\n\nSee also [#5] for where this lands in the data layer."
+    },
+    {
+      "file": "src/controllers/orderController.js",
+      "pattern": "async function createOrder",
+      "description": "### Controller\n\nBusiness logic lives here, not in routes or models. This function orchestrates validation, the repository call, and the response shape."
+    },
+    {
+      "directory": "src/repositories",
+      "description": "### Data-access layer\n\nAll database access is funneled through repositories in this directory. Controllers never touch the ORM directly — this indirection is what makes the data layer swappable and testable."
+    },
+    {
+      "title": "Layering rule (reference)",
+      "contents": "HTTP  ->  routes/  ->  controllers/  ->  repositories/  ->  ORM\n          (thin)     (business)        (data access)     (driver)\n\nRule: a layer may only call the layer directly to its right.\nViolations (e.g. a route importing a repository) are the main\nthing to flag in review.",
+      "description": "### The one rule to remember\n\nThis embedded reference (a `contents` step — no file on disk) captures the layering invariant the rest of the tour illustrated. Keep it in mind as you read code."
+    },
+    {
+      "file": "src/repositories/orderRepository.js",
+      "pattern": "class OrderRepository",
+      "description": "### Repository\n\nThe concrete data-access implementation. When you finish, the tour will offer [2 - Background Jobs] to continue.\n\nTo run the test suite for this module:\n\n>> npm test -- orderRepository"
+    }
+  ]
+}

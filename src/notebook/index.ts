@@ -14,13 +14,13 @@ class CodeTourNotebookProvider implements vscode.NotebookSerializer {
     token: any
   ): Promise<vscode.NotebookData> {
     this.originalContent = content;
-    let contents = new TextDecoder().decode(content);
+    const contents = new TextDecoder().decode(content);
 
-    let tour = <CodeTour>JSON.parse(contents);
+    const tour = <CodeTour>JSON.parse(contents);
     const workspaceRoot = getWorkspaceUri(tour);
-    let steps: any[] = [];
+    const steps: any[] = [];
 
-    for (let item of tour.steps) {
+    for (const item of tour.steps) {
       const uri = await getStepFileUri(item, workspaceRoot, tour.ref);
       const document = await vscode.workspace.openTextDocument(uri);
 
@@ -40,13 +40,13 @@ class CodeTourNotebookProvider implements vscode.NotebookSerializer {
       });
     }
 
-    let cells: vscode.NotebookCellData[] = [];
+    const cells: vscode.NotebookCellData[] = [];
 
     // Title cell
     cells.push(
       new vscode.NotebookCellData(
         1,
-        `## ![Icon](${SMALL_ICON_URL})&nbsp;&nbsp; CodeTour (${tour.title}) - ${
+        `## ![Icon](${SMALL_ICON_URL})&nbsp;&nbsp; gCodeTour (${tour.title}) - ${
           steps.length
         } steps\n\n${tour.description === undefined ? "" : tour.description}`,
         "markdown"

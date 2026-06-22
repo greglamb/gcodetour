@@ -88,9 +88,9 @@ export function registerPlayerCommands() {
     `${EXTENSION_NAME}.sendTextToTerminal`,
     async (text: string) => {
       if (!terminal) {
-        terminal = vscode.window.createTerminal("CodeTour");
+        terminal = vscode.window.createTerminal("gCodeTour");
         vscode.window.onDidCloseTerminal(term => {
-          if (term.name === "CodeTour") {
+          if (term.name === "gCodeTour") {
             terminal = null;
           }
         });
@@ -131,9 +131,8 @@ export function registerPlayerCommands() {
 
       const lineAdjustment = codeSnippet.split("\n").length - 1;
       if (lineAdjustment > 0) {
-        store.activeTour!.tour.steps[
-          store.activeTour!.step
-        ].line! += lineAdjustment;
+        store.activeTour!.tour.steps[store.activeTour!.step].line! +=
+          lineAdjustment;
 
         saveTour(store.activeTour!.tour);
       }

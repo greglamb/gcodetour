@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Schema for CodeTour tour files (greglamb/gcodetour fork)",
+  "type": "object",
+  "required": ["title", "steps"],
+  "properties": {
+    "title": { "type": "string", "description": "Specifies the title of the code tour." },
+    "description": { "type": "string", "description": "Specifies an optional description for the code tour." },
+    "ref": { "type": "string", "description": "Indicates the git ref (branch/commit/tag) that this tour associates with." },
+    "isPrimary": { "type": "boolean", "description": "Specifies whether the tour represents the primary tour for this codebase." },
+    "steps": {
+      "type": "array",
+      "description": "Specifies the list of steps that are included in the code tour.",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["description"],
+        "properties": {
+          "file": { "type": "string", "description": "File path (relative to the workspace root) that the step is associated with." },
+          "directory": { "type": "string", "description": "Directory path (relative to the workspace root) that the step is associated with." },
+          "view": {
+            "anyOf": [
+              { "type": "string", "enum": ["comments", "console", "debug", "debug:breakpoints", "debug:callstack", "debug:variables", "debug:watch", "explorer", "extensions", "extensions:disabled", "extensions:enabled", "output", "problems", "scm", "search", "terminal"], "description": "The view ID that this step is associated with." },
+              { "type": "string", "minLength": 1, "description": "The view ID that this step is associated with." }
+            ]
+          },
+          "uri": { "type": "string", "description": "Absolute URI that is associated with the step." },
+          "contents": { "type": "string", "description": "Inline file contents to display for the step, instead of referencing a file or URI on disk. (Fork-only.)" },
+          "line": { "type": "number", "description": "Line number that the step is associated with." },
+          "pattern": { "type": "string", "description": "A regular expression to associate the step with. Only considered when the line property isn't set; associates by line content rather than ordinal." },
+          "title": { "type": "string", "description": "An optional title for the step." },
+          "icon": { "type": "string", "description": "An optional icon for the step in the CodeTour tree (workspace-relative path, URL, or data URI). (Fork-only.)" },
+          "markerTitle": { "type": "string", "description": "Derived/read-only: computed by the player from a step's marker comment and stripped on save. Do not author by hand." },
+          "description": { "type": "string", "description": "Description of the step." },
+          "selection": {
+            "type": "object",
+            "required": ["start", "end"],
+            "description": "Text selection that's associated with the step.",
+            "properties": {
+              "start": { "type": "object", "required": ["line", "character"], "properties": { "line": { "type": "number" }, "character": { "type": "number" } } },
+              "end": { "type": "object", "required": ["line", "character"], "properties": { "line": { "type": "number" }, "character": { "type": "number" } } }
+            }
+          },
+          "commands": { "type": "array", "description": "Command URIs executed when this step is navigated to.", "default": [], "items": { "type": "string" } }
+        }
+      }
+    },
+    "stepMarker": { "type": "string", "description": "The 'marker' string that indicates a line of code represents a step for this tour." },
+    "nextTour": { "type": "string", "description": "The title of the tour that is meant to follow this tour." },
+    "when": { "type": "string", "description": "A JavaScript expression that must evaluate true for this tour to be shown." }
+  }
+}

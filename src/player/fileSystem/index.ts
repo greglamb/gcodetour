@@ -78,8 +78,8 @@ export class CodeTourFileSystemProvider implements FileSystemProvider {
   // Unimplemented members
 
   private _onDidChangeFile = new EventEmitter<FileChangeEvent[]>();
-  public readonly onDidChangeFile: Event<FileChangeEvent[]> = this
-    ._onDidChangeFile.event;
+  public readonly onDidChangeFile: Event<FileChangeEvent[]> =
+    this._onDidChangeFile.event;
 
   async copy?(
     source: Uri,
@@ -87,24 +87,26 @@ export class CodeTourFileSystemProvider implements FileSystemProvider {
     options: { overwrite: boolean }
   ): Promise<void> {
     throw FileSystemError.NoPermissions(
-      "CodeTour doesn't support copying files."
+      "gCodeTour doesn't support copying files."
     );
   }
 
   createDirectory(uri: Uri): void {
     throw FileSystemError.NoPermissions(
-      "CodeTour doesn't support directories."
+      "gCodeTour doesn't support directories."
     );
   }
 
   async delete(uri: Uri, options: { recursive: boolean }): Promise<void> {
     throw FileSystemError.NoPermissions(
-      "CodeTour doesn't support deleting files."
+      "gCodeTour doesn't support deleting files."
     );
   }
 
   async readDirectory(uri: Uri): Promise<[string, FileType][]> {
-    throw FileSystemError.NoPermissions("CodeTour doesnt support directories.");
+    throw FileSystemError.NoPermissions(
+      "gCodeTour doesnt support directories."
+    );
   }
 
   watch(
@@ -112,7 +114,7 @@ export class CodeTourFileSystemProvider implements FileSystemProvider {
     options: { recursive: boolean; excludes: string[] }
   ): Disposable {
     throw FileSystemError.NoPermissions(
-      "CodeTour doesn't support watching files."
+      "gCodeTour doesn't support watching files."
     );
   }
 }
