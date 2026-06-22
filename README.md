@@ -105,7 +105,7 @@ For example, if you want to define a tour that is only displayed for Linux users
 
 ### CodeTour-Flavored Markdown
 
-When you describe a step, you're able to use the full-breadth of markdown capabilities in order to write rich/compelling content (e.g. images, links, headings, code fences). However, CodeTour also provides some additional syntactic features that allow you to include additional interactivity to your tours:
+When you describe a step, you're able to use the full-breadth of markdown capabilities and basic HTML (e.g. `<details>`) in order to write rich/compelling content (e.g. images, links, headings, code fences). However, CodeTour also provides some additional syntactic features that allow you to include additional interactivity to your tours:
 
 #### File References
 
@@ -171,6 +171,10 @@ In order to make it simpler to call common commands, CodeTour will prompt you wi
 
 - `Start tour...` - Allows you to specify the title or another tour in the workspace, that when clicked, will automatically start that tour.
 
+#### Environment Variables
+
+You can reference environment variables in your step descriptions using the `{{VARIABLE_NAME}}` syntax. When the tour is played, these placeholders will be replaced with the actual environment variable values from the user's system. For example, `{{HOME}}` will be replaced with the user's home directory path. This is useful for creating tours that adapt to different environments.
+
 ### Versioning Tours
 
 When you record a tour, you'll be asked which git "ref" to associate it with. This allows you to define how resilient you want the tour to be, as changes are made to the respective codebase.
@@ -184,7 +188,7 @@ You can choose to associate with the tour with the following ref types:
 - `Current Commit` - The tour is restricted to the current commit, and therefore, will never get out of sync. If the end-user's `HEAD` points at the specified commit, then the tour will enable them to make edits to files as its taken. Otherwise, the tour will replay with read-only files.
 - Tags - The tour is restricted to the selected tag, and therefore, will never get out of sync. The repo's entire list of tags will be displayed, which allows you to easily select one.
 
-At any time, you can edit the tour's ref by right-clicking it in the `CodeTour` tree and selecting `Change Git Ref`. This let's you "rebase" a tour to a tag/commit as you change/update your code and/or codebase.
+At any time, you can edit the tour's ref by right-clicking it in the `CodeTour` tree and selecting `Change Git Ref`. This let's you re-target a tour to a tag/commit as you change/update your code and/or codebase.
 
 ### Content Steps
 

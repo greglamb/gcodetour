@@ -54,9 +54,14 @@ const TOUR_REFERENCE_PATTERN =
   /(?:\[(?<linkTitle>[^\]]+)\])?\[(?=\s*[^\]\s])(?<tourTitle>[^\]#]+)?(?:#(?<stepNumber>\d+))?\](?!\()/gm;
 const FILE_REFERENCE_PATTERN = /(\!)?(\[[^\]]+\]\()(\.[^\)]+)(?=\))/gm;
 const CODE_FENCE_PATTERN = /```[^\n]+\n(.+)\n```/gms;
+const ENV_VARIABLE_PATTERN = /\{\{([A-Z_][A-Z0-9_]*)\}\}/g;
 
 export function generatePreviewContent(content: string) {
   return content
+    .replace(
+      ENV_VARIABLE_PATTERN,
+      (_, name) => process.env[name] || `{{${name}}}`
+    )
     .replace(SHELL_SCRIPT_PATTERN, (_, script) => {
       const args = encodeURIComponent(JSON.stringify([script]));
       const s = `> [${script}](command:codetour.sendTextToTerminal?${args} "Run \\"${script.replace(
@@ -128,7 +133,8 @@ export class CodeTourComment implements Comment {
     const body =
       mode === CommentMode.Preview ? generatePreviewContent(content) : content;
 
-    this.body = new MarkdownString(body);
+    this.body = new MarkdownString(body, true);
+    this.body.supportHtml = true;
     this.body.isTrusted = true;
   }
 }
@@ -137,7 +143,7 @@ let controller: CommentController | null;
 
 export async function focusPlayer() {
   const currentThread = store.activeTour!.thread!;
-  showDocument(currentThread.uri, currentThread.range);
+  showDocument(currentThread.uri, currentThread.range!);
 }
 
 export async function startPlayer() {

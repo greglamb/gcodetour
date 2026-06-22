@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+import { configure } from "mobx";
 import * as vscode from "vscode";
 import { initializeApi } from "./api";
 import { initializeGitApi } from "./git";
@@ -75,6 +76,10 @@ class URIHandler implements vscode.UriHandler {
 }
 
 export async function activate(context: vscode.ExtensionContext) {
+  // Isolate this extension's MobX instance from any other copies of MobX
+  // that might be loaded in the same extension host process.
+  configure({ isolateGlobalState: true });
+
   registerPlayerModule(context);
   registerRecorderModule();
   registerLiveShareModule();
