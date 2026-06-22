@@ -69,6 +69,10 @@
             "type": "string",
             "description": "Absolute URI that is associated with the step."
           },
+          "contents": {
+            "type": "string",
+            "description": "Inline file contents to display for the step, instead of referencing a file or URI on disk."
+          },
           "line": {
             "type": "number",
             "description": "Line number that the step is associated with."
@@ -80,6 +84,14 @@
           "title": {
             "type": "string",
             "description": "An optional title for the step."
+          },
+          "icon": {
+            "type": "string",
+            "description": "An optional icon to associate with the step in the CodeTour tree (a workspace-relative file path, a URL, or a data URI)."
+          },
+          "markerTitle": {
+            "type": "string",
+            "description": "An optional title for the step, derived from the step's marker comment in the source code."
           },
           "description": {
             "type": "string",
