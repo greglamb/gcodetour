@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 
 // Smoke test: the web bundle (dist/extension-web.js) loads + activates in the
 // browser extension host (vscode.dev / github.dev) and registers its commands.
-const EXTENSION_ID = "greglamb.codetour";
+const EXTENSION_ID = "greglamb.gcodetour";
 
 describe("gCodeTour Web Extension", () => {
   it("is installed in the web host", () => {
