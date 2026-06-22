@@ -1,0 +1,16 @@
+{
+  "title": "Sample Tour",
+  "description": "A minimal tour used by the Playwright UI tests.",
+  "steps": [
+    {
+      "file": "sample.js",
+      "line": 2,
+      "description": "This is the first step."
+    },
+    {
+      "file": "sample.js",
+      "line": 5,
+      "description": "This is the second step."
+    }
+  ]
+}

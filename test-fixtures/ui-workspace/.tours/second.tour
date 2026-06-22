@@ -1,0 +1,11 @@
+{
+  "title": "Second Tour",
+  "description": "A second tour so the Start Tour quick pick has multiple entries.",
+  "steps": [
+    {
+      "file": "sample.js",
+      "line": 1,
+      "description": "Second tour step."
+    }
+  ]
+}

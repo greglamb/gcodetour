@@ -37,43 +37,32 @@ import { registerPlayerCommands } from "./commands";
 import { registerDecorators } from "./decorator";
 import { registerFileSystemProvider } from "./fileSystem";
 import { registerTextDocumentContentProvider } from "./fileSystem/documentProvider";
+import {
+  encodeCommandParameters,
+  linkifyCodeSnippets,
+  linkifyShellScripts,
+  substituteEnvironmentVariables
+} from "./preview";
 import { registerStatusBar } from "./status";
 import { registerTreeProvider } from "./tree";
 
 const CONTROLLER_ID = "codetour";
-const CONTROLLER_LABEL = "CodeTour";
+const CONTROLLER_LABEL = "gCodeTour";
 
 let id = 0;
 
-const SHELL_SCRIPT_PATTERN = /^>>\s+(?<script>.*)$/gm;
-
-const COMMAND_PATTERN =
-  /(?<commandPrefix>\(command:[\w+\.]+\?)(?<params>\[[^\]\)]+\])/gm;
-
 const TOUR_REFERENCE_PATTERN =
   /(?:\[(?<linkTitle>[^\]]+)\])?\[(?=\s*[^\]\s])(?<tourTitle>[^\]#]+)?(?:#(?<stepNumber>\d+))?\](?!\()/gm;
-const FILE_REFERENCE_PATTERN = /(\!)?(\[[^\]]+\]\()(\.[^\)]+)(?=\))/gm;
-const CODE_FENCE_PATTERN = /```[^\n]+\n(.+)\n```/gms;
-const ENV_VARIABLE_PATTERN = /\{\{([A-Z_][A-Z0-9_]*)\}\}/g;
+const FILE_REFERENCE_PATTERN = /(!)?(\[[^\]]+\]\()(\.[^)]+)(?=\))/gm;
 
 export function generatePreviewContent(content: string) {
-  return content
-    .replace(
-      ENV_VARIABLE_PATTERN,
-      (_, name) => process.env[name] || `{{${name}}}`
-    )
-    .replace(SHELL_SCRIPT_PATTERN, (_, script) => {
-      const args = encodeURIComponent(JSON.stringify([script]));
-      const s = `> [${script}](command:codetour.sendTextToTerminal?${args} "Run \\"${script.replace(
-        /"/g,
-        "'"
-      )}\\" in a terminal")`;
-      return s;
-    })
-    .replace(COMMAND_PATTERN, (_, commandPrefix, params) => {
-      const args = encodeURIComponent(JSON.stringify(JSON.parse(params)));
-      return `${commandPrefix}${args}`;
-    })
+  // Pure transforms (see ./preview), applied before the VS Code-dependent
+  // file/tour reference rewriting below.
+  let result = substituteEnvironmentVariables(content);
+  result = linkifyShellScripts(result);
+  result = encodeCommandParameters(result);
+
+  result = result
     .replace(FILE_REFERENCE_PATTERN, (_, isImage, prefix, filePath) => {
       const workspaceUri = workspace.getWorkspaceFolder(
         Uri.parse(store.activeTour!.tour.id)
@@ -107,12 +96,9 @@ export function generatePreviewContent(content: string) {
       }
 
       return _;
-    })
-    .replace(CODE_FENCE_PATTERN, (_, codeBlock) => {
-      const params = encodeURIComponent(JSON.stringify([codeBlock]));
-      return `${_}
-↪ [Insert Code](command:codetour.insertCodeSnippet?${params} "Insert Code")`;
     });
+
+  return linkifyCodeSnippets(result);
 }
 
 export class CodeTourComment implements Comment {
@@ -253,8 +239,8 @@ async function renderCurrentStep() {
   let line = step.line
     ? step.line - 1
     : step.selection
-    ? step.selection.end.line - 1
-    : undefined;
+      ? step.selection.end.line - 1
+      : undefined;
 
   if (step.file && line === undefined) {
     const stepPattern = step.pattern || getActiveStepMarker();
@@ -351,8 +337,11 @@ async function renderCurrentStep() {
     mode
   );
 
-  // @ts-ignore
   store.activeTour!.thread.canReply = false;
+  // Set an explicit thread label so VS Code doesn't render its default
+  // "Start discussion" title in the comment thread header. (An empty string is
+  // treated as unset and falls back to the default, so use the tour title.)
+  store.activeTour!.thread.label = getTourTitle(currentTour) || label;
   store.activeTour!.thread.comments = [comment];
 
   const contextValues = [];
@@ -405,7 +394,7 @@ async function renderCurrentStep() {
   if (step.commands) {
     for (const command of step.commands) {
       let name = command,
-      args: any[] = [];
+        args: any[] = [];
 
       if (command.includes("?")) {
         const parts = command.split("?");

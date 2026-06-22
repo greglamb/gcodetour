@@ -5,7 +5,7 @@ import * as vsls from "vsls";
 import { EXTENSION_NAME } from "../constants";
 
 export async function registerLiveShareModule() {
-  const vslsApi = await vsls.getApi(`vsls-contrib.${EXTENSION_NAME}`);
+  const vslsApi = await vsls.getApi(`greglamb.${EXTENSION_NAME}`);
   if (!vslsApi) return;
 
   vslsApi.onDidChangeSession(e => {
@@ -20,7 +20,7 @@ export async function registerLiveShareModule() {
 }
 
 async function initializeService(vslsApi: vsls.LiveShare) {
-  let { initializeService } =
+  const { initializeService } =
     vslsApi.session.role === vsls.Role.Host
       ? require("./hostService")
       : require("./guestService");

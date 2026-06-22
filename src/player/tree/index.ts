@@ -20,8 +20,8 @@ class CodeTourTreeProvider implements TreeDataProvider<TreeItem>, Disposable {
   private _disposables: Disposable[] = [];
 
   private _onDidChangeTreeData = new EventEmitter<TreeItem | undefined>();
-  public readonly onDidChangeTreeData: Event<TreeItem | undefined> = this
-    ._onDidChangeTreeData.event;
+  public readonly onDidChangeTreeData: Event<TreeItem | undefined> =
+    this._onDidChangeTreeData.event;
 
   constructor(private extensionPath: string) {
     reaction(

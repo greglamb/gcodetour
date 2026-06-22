@@ -1,15 +1,17 @@
 name: Release
 
+# Manual only — trigger from the Actions tab → "Release" → "Run workflow".
+# It packages the extension and creates a GitHub Release (tagged with the
+# package.json version) with the .vsix attached. Bump the version first with
+# `npm run version:bump`, then commit/push, then run this.
 on:
-  release:
-    types:
-      - created
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  Release:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,7 +23,9 @@ jobs:
       - run: npm install
       - name: Package extension
         run: npm run package
-      - name: Attach VSIX to GitHub release
-        run: gh release upload "${{ github.event.release.tag_name }}" *.vsix --clobber
+      - name: Create GitHub release with the VSIX
         env:
           GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          gh release create "v$VERSION" *.vsix --title "v$VERSION" --generate-notes

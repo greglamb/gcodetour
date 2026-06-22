@@ -28,7 +28,10 @@ const completeIcon = new ThemeIcon(
 );
 
 export class CodeTourNode extends TreeItem {
-  constructor(public tour: CodeTour, extensionPath: string) {
+  constructor(
+    public tour: CodeTour,
+    extensionPath: string
+  ) {
     super(
       tour.title!,
       isRecording(tour)
@@ -60,15 +63,18 @@ export class CodeTourNode extends TreeItem {
     this.iconPath = isRecording(tour)
       ? new ThemeIcon("record")
       : isActive
-      ? new ThemeIcon("play-circle")
-      : progress.isComplete(tour)
-      ? completeIcon
-      : new ThemeIcon("location");
+        ? new ThemeIcon("play-circle")
+        : progress.isComplete(tour)
+          ? completeIcon
+          : new ThemeIcon("location");
   }
 }
 
 export class CodeTourStepNode extends TreeItem {
-  constructor(public tour: CodeTour, public stepNumber: number) {
+  constructor(
+    public tour: CodeTour,
+    public stepNumber: number
+  ) {
     super(getStepLabel(tour, stepNumber));
 
     const step = tour.steps[stepNumber];
@@ -113,19 +119,19 @@ export class CodeTourStepNode extends TreeItem {
       // @ts-ignore
       this.iconPath = completeIcon;
     } else if (step.icon) {
-      if (step.icon.startsWith('.')) {
+      if (step.icon.startsWith(".")) {
         const resourceRoot = workspaceRoot
           ? workspaceRoot
           : getWorkspaceUri(tour);
-          
-          this.iconPath = getFileUri(step.icon, resourceRoot);
+
+        this.iconPath = getFileUri(step.icon, resourceRoot);
       } else {
         try {
           const uri = Uri.parse(step.icon, true);
-          
+
           this.iconPath = uri;
         } catch {
-          const data = step.icon.split(',');
+          const data = step.icon.split(",");
           if (data.length > 1) {
             this.iconPath = new ThemeIcon(data[0], new ThemeColor(data[1]));
           } else {
