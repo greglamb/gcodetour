@@ -1,5 +1,5 @@
 {
-  "name": "codetour",
+  "name": "gcodetour",
   "displayName": "gCodeTour",
   "description": "VS Code extension that allows you to record and playback guided tours of codebases, directly within the editor",
   "publisher": "greglamb",

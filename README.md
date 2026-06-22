@@ -431,7 +431,7 @@ In addition to the aforementioned functions, the extension API also allows subsc
 ```javascript
 // Check if the end-user has the gCodeTour extension installed.
 const codeTourExtension = vscode.extensions.getExtension(
-  "greglamb.codetour"
+  "greglamb.gcodetour"
 );
 if (codeTourExtension) {
   // Grab the extension API.

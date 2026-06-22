@@ -4,7 +4,7 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
 
-export const EXTENSION_ID = "greglamb.codetour";
+export const EXTENSION_ID = "greglamb.gcodetour";
 
 /**
  * The public API surface returned from the extension's `activate` function
