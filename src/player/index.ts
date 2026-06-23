@@ -11,6 +11,7 @@ import {
   comments,
   CommentThread,
   CommentThreadCollapsibleState,
+  ConfigurationTarget,
   ExtensionContext,
   MarkdownString,
   Range,
@@ -128,6 +129,34 @@ export class CodeTourComment implements Comment {
 
 let controller: CommentController | null;
 
+// While a tour plays we suppress VS Code's auto-opening Comments panel (each step
+// is a comment thread, so it would pop the bottom panel on tour start). We save
+// the user's `comments.openView`, force "never" for the duration, and restore it
+// when the tour stops. `null` means "not currently managing it".
+let savedCommentsOpenView: string | undefined | null = null;
+
+async function suppressCommentsPanel() {
+  if (savedCommentsOpenView !== null) {
+    return; // already managing — don't clobber the saved value
+  }
+  const config = workspace.getConfiguration("comments");
+  savedCommentsOpenView = config.inspect<string>("openView")?.globalValue;
+  if (config.get<string>("openView") !== "never") {
+    await config.update("openView", "never", ConfigurationTarget.Global);
+  }
+}
+
+async function restoreCommentsPanel() {
+  if (savedCommentsOpenView === null) {
+    return; // not managing
+  }
+  const previous = savedCommentsOpenView;
+  savedCommentsOpenView = null;
+  await workspace
+    .getConfiguration("comments")
+    .update("openView", previous, ConfigurationTarget.Global);
+}
+
 export async function focusPlayer() {
   const currentThread = store.activeTour!.thread!;
   showDocument(currentThread.uri, currentThread.range!);
@@ -137,6 +166,8 @@ export async function startPlayer() {
   if (controller) {
     controller.dispose();
   }
+
+  await suppressCommentsPanel();
 
   controller = comments.createCommentController(
     CONTROLLER_ID,
@@ -166,6 +197,8 @@ export async function stopPlayer() {
     controller.dispose();
     controller = null;
   }
+
+  await restoreCommentsPanel();
 }
 
 const VIEW_COMMANDS = new Map([

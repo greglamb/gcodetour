@@ -33,10 +33,19 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
+/* Render the diagram at its natural size and let #diagram-root scroll. Capping it
+   to the panel width distorted PlantUML SVGs (they carry preserveAspectRatio=none)
+   and shrank large diagrams below readability; natural size + scroll keeps them
+   legible, and applyHighlight() scrolls the active element into view. */
 #diagram-surface svg {
   display: block;
-  max-width: 100%;
-  height: auto;
+}
+
+/* The sentinel anchor is inert (the player neutralizes clicks), so it shouldn't
+   read as a hyperlink. PlantUML underlines activity-node link labels; drop it.
+   (The link colour is matched to normal node text in the client.) */
+#diagram-surface a text {
+  text-decoration: none;
 }
 
 /* Highlight + dim treatments are reversible per step (driven by class toggles). */

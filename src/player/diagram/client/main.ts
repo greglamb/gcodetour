@@ -49,6 +49,7 @@ window.addEventListener("message", event => {
 });
 
 window.addEventListener("resize", positionCallout);
+root.addEventListener("scroll", positionCallout);
 new ResizeObserver(positionCallout).observe(root);
 
 // Diagram links never navigate; sentinel clicks are reported for completeness.
@@ -68,10 +69,49 @@ vscode.postMessage({ type: "ready" });
 
 function render(svgText: string): void {
   clearHighlightState();
+  root.scrollTo(0, 0);
   const svg = sanitize(svgText);
   surface.replaceChildren();
   if (svg) {
+    // PlantUML emits preserveAspectRatio="none", which lets the webview stretch
+    // the SVG to its box and distort it. Force uniform scaling.
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    normalizeSentinelLinkText(svg);
     surface.appendChild(svg);
+  }
+}
+
+// PlantUML colours activity-node `[[links]]` as theme hyperlinks (e.g. orange),
+// which clashes with normal node text (and unlike C4's `$link`, restyles the
+// label). The link is inert here, so repaint each underlined sentinel-link label
+// to the diagram's normal text colour (the most common non-link `fill`).
+function normalizeSentinelLinkText(svg: Element): void {
+  const texts = Array.from(svg.querySelectorAll("text"));
+  const counts = new Map<string, number>();
+  for (const text of texts) {
+    if (text.getAttribute("text-decoration") === "underline") {
+      continue; // skip the links themselves when sampling normal text
+    }
+    const fill = text.getAttribute("fill");
+    if (fill) {
+      counts.set(fill, (counts.get(fill) ?? 0) + 1);
+    }
+  }
+  let normalFill: string | undefined;
+  let best = 0;
+  for (const [fill, count] of counts) {
+    if (count > best) {
+      best = count;
+      normalFill = fill;
+    }
+  }
+  if (!normalFill) {
+    return;
+  }
+  for (const text of texts) {
+    if (text.getAttribute("text-decoration") === "underline") {
+      text.setAttribute("fill", normalFill);
+    }
   }
 }
 
@@ -127,6 +167,13 @@ function applyHighlight(
     if (target) {
       target.classList.add("ct-highlight");
       dimOthers(target);
+      // The diagram renders at natural size and scrolls, so bring the focused
+      // element into view (only scrolls when it isn't already visible).
+      target.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+        behavior: "smooth"
+      });
     } else {
       console.warn(`[gCodeTour] diagram element not found: ${element}`);
     }
@@ -190,8 +237,10 @@ function positionCallout(): void {
   };
 
   const pos = clampCallout(box, viewport, calloutSize, CALLOUT_GAP);
-  calloutEl.style.left = `${pos.x}px`;
-  calloutEl.style.top = `${pos.y}px`;
+  // The callout is absolutely positioned inside the scrolling #diagram-root, so
+  // offset by the scroll to keep it pinned to the (visible) target.
+  calloutEl.style.left = `${pos.x + root.scrollLeft}px`;
+  calloutEl.style.top = `${pos.y + root.scrollTop}px`;
 }
 
 function clearHighlightState(): void {
