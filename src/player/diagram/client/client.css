@@ -42,8 +42,9 @@ body {
 }
 
 /* The sentinel anchor is inert (the player neutralizes clicks), so it shouldn't
-   read as a hyperlink. PlantUML underlines activity-node link labels; drop it.
-   (The link colour is matched to normal node text in the client.) */
+   read as a hyperlink. PlantUML underlines activity-node link labels; drop it so
+   the label reads as normal node text. (With the default solid themes the label
+   colour is already the node text colour, so no recolouring is needed.) */
 #diagram-surface a text {
   text-decoration: none;
 }

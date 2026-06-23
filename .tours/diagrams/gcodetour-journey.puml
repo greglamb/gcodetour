@@ -1,7 +1,7 @@
 @startuml
 ' Developer-journey activity swim lane. Lane declared before start; nodes use the
 ' label-only link form (see schema.md). Render: skills/gcodetour-author/scripts/render-diagrams.sh
-!theme materia-outline
+!theme bluegray
 ' Opaque background so the diagram reads on any VS Code editor theme (the panel
 ' background follows the reader's theme; C4 diagrams bake this automatically).
 skinparam backgroundColor #FFFFFF

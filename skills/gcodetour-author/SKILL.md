@@ -68,7 +68,7 @@ PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, o
 
 ### Theming
 
-**Activity / swim-lane diagrams:** default to `!theme materia-outline` (place it on the line right after `@startuml`). If the user asks for a different look — or names a theme — use that instead; it's their call, so honor any request. The themes below are bundled in the pinned renderer (PlantUML 1.2025.x via Kroki) and need no remote fetch:
+**Activity / swim-lane diagrams:** default to `!theme bluegray` (place it on the line right after `@startuml`). It's the solid-blue theme that most closely matches the `C4_blue_new` C4 default — both are solid blue boxes with white text on a white background — so a tour mixing C4 and swim-lane diagrams reads as one set. If the user asks for a different look — or names a theme — use that instead; it's their call, so honor any request. The themes below are bundled in the pinned renderer (PlantUML 1.2025.x via Kroki) and need no remote fetch:
 
 `plain` · `amiga` · `aws-orange` · `black-knight` · `bluegray` · `blueprint` · `carbon-gray` · `cerulean` · `cerulean-outline` · `cloudscape-design` · `crt-amber` · `crt-green` · `cyborg` · `cyborg-outline` · `hacker` · `lightgray` · `mars` · `materia` · `materia-outline` · `metal` · `mimeograph` · `minty` · `mono` · `reddress-darkblue` · `reddress-darkgreen` · `reddress-darkorange` · `reddress-darkred` · `reddress-lightblue` · `reddress-lightgreen` · `reddress-lightorange` · `reddress-lightred` · `sandstone` · `silver` · `sketchy` · `sketchy-outline` · `spacelab` · `spacelab-white` · `sunlust` · `superhero` · `superhero-outline` · `toy` · `united` · `vibrant` (and `_none_` to reset to the bare default).
 
@@ -78,14 +78,14 @@ PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, o
 !theme C4_blue_new from <C4/themes>
 ```
 
-`C4_blue_new` is the default because it visually pairs with the `materia-outline` activity default — both are blue, outlined/wireframe, white-background — so a tour mixing C4 and swim-lane diagrams looks like one set. If the user asks for a different look, use any of these (verified working in the pinned renderer): `C4_blue`, `C4_brown`, `C4_green`, `C4_violet`, `C4_sandstone`, `C4_superhero`, `C4_united`, plus the redesigned `C4_blue_new` / `C4_brown_new` / `C4_green_new` / `C4_violet_new` variants (rounded, wireframe). The `<C4/themes>` calculated path resolves from the renderer's bundled C4 stdlib, so it works offline with no remote fetch (pinned by the Kroki image digest). For control beyond a theme, use C4's styling API: `UpdateElementStyle()`, element tags via `AddElementTag` + `$tags=`, `UpdateBoundaryStyle()` / `UpdateRelStyle()`. (C4 themes bake an opaque background like the default, so the self-contained-card guidance below still holds.)
+`C4_blue_new` is the default because it visually pairs with the `bluegray` activity default — both are solid blue boxes with white text on a white background — so a tour mixing C4 and swim-lane diagrams looks like one set. If the user asks for a different look, use any of these (verified working in the pinned renderer): `C4_blue`, `C4_brown`, `C4_green`, `C4_violet`, `C4_sandstone`, `C4_superhero`, `C4_united`, plus the redesigned `C4_blue_new` / `C4_brown_new` / `C4_green_new` / `C4_violet_new` variants (rounded, solid fills). The `<C4/themes>` calculated path resolves from the renderer's bundled C4 stdlib, so it works offline with no remote fetch (pinned by the Kroki image digest). For control beyond a theme, use C4's styling API: `UpdateElementStyle()`, element tags via `AddElementTag` + `$tags=`, `UpdateBoundaryStyle()` / `UpdateRelStyle()`. (C4 themes bake an opaque background like the default, so the self-contained-card guidance below still holds.)
 
-**Heads-up (why `materia-outline` is the default):** a theme's colors are baked into the SVG at render time and do **not** adapt to the reader's light/dark editor — only the gCodeTour highlight/callout chrome follows the VS Code theme. `materia-outline` is light with clean outlines, so it reads on both light and dark editors. Pick a dark theme (e.g. `superhero-outline`) only when you know the audience uses dark editors. Re-run `scripts/render-diagrams.sh` after changing a theme.
+**Heads-up (why `bluegray` is the default):** a theme's colors are baked into the SVG at render time and do **not** adapt to the reader's light/dark editor — only the gCodeTour highlight/callout chrome follows the VS Code theme. `bluegray` is light (white background) and matches the `C4_blue_new` C4 default, so it reads on both light and dark editors and keeps a mixed tour consistent. Pick a dark theme (e.g. `superhero-outline`) only when you know the audience uses dark editors. Re-run `scripts/render-diagrams.sh` after changing a theme.
 
 **Give every diagram an opaque background (so it reads on any editor theme).** The diagram panel's background follows the reader's VS Code theme, which is unknown at render time — so a transparent diagram with dark text becomes unreadable on a dark editor. Make each diagram a self-contained "card" by baking a background **matched to its own theme** (not the reader's): light theme → a light background, dark theme → a dark one.
 
 - **C4 diagrams** already bake a white background automatically — nothing to do.
-- **Activity / swim-lane diagrams** are transparent by default, so add `skinparam backgroundColor <color>` right after the `!theme` line — `#FFFFFF` for the default `materia-outline` (or any light theme); a dark color (e.g. `#1B1B1B`) only if you switched to a dark theme. Use `skinparam backgroundColor`, not a hand-drawn full-canvas rectangle — you don't know the canvas size ahead of time, and the skinparam is the idiomatic one-liner.
+- **Activity / swim-lane diagrams** are transparent by default, so add `skinparam backgroundColor <color>` right after the `!theme` line — `#FFFFFF` for the default `bluegray` (or any light theme); a dark color (e.g. `#1B1B1B`) only if you switched to a dark theme. Use `skinparam backgroundColor`, not a hand-drawn full-canvas rectangle — you don't know the canvas size ahead of time, and the skinparam is the idiomatic one-liner.
 
 **Fonts.** Diagrams use **Roboto** — add `skinparam defaultFontName Roboto` (after the `!theme`/`!include`). The render pipeline installs Roboto into the renderer image via `fnt` (so PlantUML *measures* boxes with it) and embeds a subset into every SVG (so it *displays* in Roboto in any viewer, even if the reader doesn't have it). To use a different font, add it to `scripts/renderer/fonts.list` first (see `scripts/renderer/README.md`) — naming a font the renderer doesn't install makes measurement and display disagree. Name Roboto **only** when you render with this bundled pipeline; if you skip the renderer, drop the `skinparam` so measurement and display agree on the default font.
 
@@ -125,14 +125,14 @@ Put `SHOW_LEGEND()` at the **end** of the diagram so the colour key renders *wit
 PlantUML has no stable element IDs, so tag every element a step will target with a sentinel hyperlink — PlantUML wraps linked elements in an `<a href="ct://el/<alias>">`, which the player resolves.
 
 - **C4 elements:** pass `$link` — `Container(api, "Order API", "C#", "Accepts orders", $link="ct://el/orderApi")`. The whole element becomes the anchor and nothing extra is drawn.
-- **Activity / swim-lane nodes:** make the node label *itself* the link with the **label-only** form — `:[[ct://el/validate Validate order]];` (the alias, a space, then the visible text). **Do not** use the trailing form `:Validate order [[ct://el/validate]];` — PlantUML renders the raw `ct://el/validate` URL as visible underlined text inside the box.
+- **Activity / swim-lane nodes:** make the node label *itself* the link with the **label-only** form — `:[[ct://el/validate Validate order]];` (the alias, a space, then the visible text). **Do not** use the trailing form `:Validate order [[ct://el/validate]];` — PlantUML renders the raw `ct://el/validate` URL as visible underlined text inside the box. (PlantUML underlines the linked label in the raw SVG; the gCodeTour player strips that underline so it reads as normal node text.)
 - Aliases are stable, human-meaningful, and must **exactly equal** the `diagram.element` values in the tour. Don't key them off layout or order, so re-rendering keeps them valid.
 
 **Swim-lane skeleton.** The first `|Lane|` must appear *before* `start`, or PlantUML errors with `This swimlane must be defined at the start of the diagram`:
 
 ```
 @startuml
-!theme materia-outline
+!theme bluegray
 skinparam backgroundColor #FFFFFF
 skinparam defaultFontName Roboto
 |Developer|
@@ -150,7 +150,7 @@ Keep `'` comments in activity sources short and free of `[[…]]`/`<…>` link s
 
 ### Render → reference loop
 
-1. Write sources to `.tours/diagrams/*.puml`. C4 files start with `!include <C4/C4_Container>` (or `<C4/C4_Dynamic>`, etc.) — C4-PlantUML ships in the renderer's bundled PlantUML stdlib, so this resolves offline with nothing vendored. Activity/swim-lane files start with `!theme materia-outline` (see [Theming](#theming)) and declare the first `|Lane|` before `start`.
+1. Write sources to `.tours/diagrams/*.puml`. C4 files start with `!include <C4/C4_Container>` (or `<C4/C4_Dynamic>`, etc.) — C4-PlantUML ships in the renderer's bundled PlantUML stdlib, so this resolves offline with nothing vendored. Activity/swim-lane files start with `!theme bluegray` (see [Theming](#theming)) and declare the first `|Lane|` before `start`.
 2. Render with the skill's bundled `scripts/render-diagrams.sh [diagram-dir]` (default `.tours/diagrams`). It builds a digest-pinned Kroki image (installing the fonts in `scripts/renderer/fonts.list`) and writes a sibling `*.svg` per source. Requires Docker, curl, and node; **playback requires none of them**. Commit the `.svg` files so tours play without the renderer.
 3. Reference each rendered SVG from steps via `diagram: { path, element, callout }`.
 

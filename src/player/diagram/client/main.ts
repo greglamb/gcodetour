@@ -76,42 +76,7 @@ function render(svgText: string): void {
     // PlantUML emits preserveAspectRatio="none", which lets the webview stretch
     // the SVG to its box and distort it. Force uniform scaling.
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    normalizeSentinelLinkText(svg);
     surface.appendChild(svg);
-  }
-}
-
-// PlantUML colours activity-node `[[links]]` as theme hyperlinks (e.g. orange),
-// which clashes with normal node text (and unlike C4's `$link`, restyles the
-// label). The link is inert here, so repaint each underlined sentinel-link label
-// to the diagram's normal text colour (the most common non-link `fill`).
-function normalizeSentinelLinkText(svg: Element): void {
-  const texts = Array.from(svg.querySelectorAll("text"));
-  const counts = new Map<string, number>();
-  for (const text of texts) {
-    if (text.getAttribute("text-decoration") === "underline") {
-      continue; // skip the links themselves when sampling normal text
-    }
-    const fill = text.getAttribute("fill");
-    if (fill) {
-      counts.set(fill, (counts.get(fill) ?? 0) + 1);
-    }
-  }
-  let normalFill: string | undefined;
-  let best = 0;
-  for (const [fill, count] of counts) {
-    if (count > best) {
-      best = count;
-      normalFill = fill;
-    }
-  }
-  if (!normalFill) {
-    return;
-  }
-  for (const text of texts) {
-    if (text.getAttribute("text-decoration") === "underline") {
-      text.setAttribute("fill", normalFill);
-    }
   }
 }
 
