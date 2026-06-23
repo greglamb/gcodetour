@@ -54,18 +54,27 @@ body {
   outline: none;
 }
 
+/* The highlight border applies to the node's box shape — whether it's nested in
+   the <a> (C4) or is the sibling box we tagged alongside the <a> (activity). */
 .ct-highlight rect,
 .ct-highlight ellipse,
 .ct-highlight circle,
 .ct-highlight polygon,
-.ct-highlight path {
+.ct-highlight path,
+rect.ct-highlight,
+ellipse.ct-highlight,
+circle.ct-highlight,
+polygon.ct-highlight,
+path.ct-highlight {
   stroke: var(--vscode-focusBorder, #007fd4);
   stroke-width: 3px;
   filter: drop-shadow(0 0 4px var(--vscode-focusBorder, #007fd4));
 }
 
+/* Inactive elements are muted but must stay legible — the whole node (box + label)
+   fades together, never just the label. */
 .ct-dim {
-  opacity: 0.35;
+  opacity: 0.5;
   transition: opacity 0.15s ease-in-out;
 }
 

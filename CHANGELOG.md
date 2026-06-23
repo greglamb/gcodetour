@@ -4,6 +4,10 @@
 - Automatically set the "pattern" record mode when you create a new tour, and select `None` for the git ref
 - Added support for opening a `*.tour` file in the VS Code notebook editor (Insiders only)
 
+## v0.2606.2306 (06/23/26)
+
+- **Diagram highlight/dim** now treats an activity/swim-lane node as a whole unit (its box **and** its label), matching how C4 elements already behaved. Previously only the label was dimmed while the box stayed fully opaque, so inactive nodes on solid-fill themes became unreadable "blank boxes." Now the highlighted node clearly stands out (box border + glow) and inactive nodes fade together while staying legible. Also softened the dim (0.35 → 0.5) so inactive elements remain readable.
+
 ## v0.2606.2305 (06/23/26)
 
 - Fixed the diagram panel not opening when a tour's **first step is a content step** (or any step that opens no editor) and the window had no editors open. `createWebviewPanel(ViewColumn.Beside)` on an empty workbench produces no visible panel, so the diagram only appeared after navigating to a step that opened an editor. The panel now falls back to a concrete column when there's nothing to sit beside. Added an integration regression test (content first step, no editors open).

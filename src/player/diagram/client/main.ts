@@ -130,7 +130,7 @@ function applyHighlight(
   if (element) {
     const target = findTarget(element);
     if (target) {
-      target.classList.add("ct-highlight");
+      addClass(target, "ct-highlight");
       dimOthers(target);
       // The diagram renders at natural size and scrolls, so bring the focused
       // element into view (only scrolls when it isn't already visible).
@@ -145,6 +145,34 @@ function applyHighlight(
   }
 
   positionCallout();
+}
+
+// An addressable node is the sentinel `<a>` plus its box shape. C4 wraps the box
+// inside the `<a>`; activity/swim-lane diagrams emit the box `<rect>` as the
+// sibling immediately before the `<a>` (the `<a>` then holds only the label). We
+// apply highlight/dim to BOTH so the whole node reacts as one — otherwise dimming
+// only fades an activity node's text and leaves its box fully opaque (an
+// unreadable blank box).
+const NODE_SHAPES = /^(rect|ellipse|polygon|circle|path)$/i;
+
+function nodeParts(anchor: Element): Element[] {
+  const parts: Element[] = [anchor];
+  const wrapsOwnShape = anchor.querySelector(
+    "rect, ellipse, polygon, circle, path"
+  );
+  if (!wrapsOwnShape) {
+    const prev = anchor.previousElementSibling;
+    if (prev && NODE_SHAPES.test(prev.tagName)) {
+      parts.push(prev);
+    }
+  }
+  return parts;
+}
+
+function addClass(anchor: Element, className: string): void {
+  for (const part of nodeParts(anchor)) {
+    part.classList.add(className);
+  }
 }
 
 function findTarget(alias: string): Element | null {
@@ -169,7 +197,7 @@ function dimOthers(target: Element): void {
     const href =
       anchor.getAttribute("href") ?? anchor.getAttribute("xlink:href");
     if (isSentinelHref(href) && anchor !== target) {
-      anchor.classList.add("ct-dim");
+      addClass(anchor, "ct-dim");
     }
   }
 }
