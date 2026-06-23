@@ -35,6 +35,7 @@ This is the single most important quality lever. Line numbers are ordinals that 
 - Set `pattern` to a regex matching a distinctive line (a function signature, a class declaration, a specific `app.use(...)`), and **omit `line` entirely** — if both are present, `line` wins.
 - Escape regex metacharacters in literal code, and remember JSON doubles the backslash: a literal `express()` becomes `"express\\(\\)"` in the file.
 - Make the pattern specific enough to match exactly one line.
+- **Grep-count each pattern before you write the step.** Run the regex against the target file (e.g. `grep -nE 'pattern' path/to/file`) and confirm it matches **exactly one** line up front — zero means a broken anchor, more than one means an ambiguous one. Doing this for every step as you go eliminates verifier round-trips at the end.
 
 ## Authoring diagrams
 
