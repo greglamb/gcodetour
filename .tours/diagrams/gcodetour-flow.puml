@@ -5,6 +5,7 @@
 !theme C4_blue_new from <C4/themes>
 !$RELATIVE_INCLUDE = "."
 !include C4_Dynamic.puml
+skinparam defaultFontName Roboto
 
 LAYOUT_WITH_LEGEND()
 
