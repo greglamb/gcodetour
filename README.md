@@ -21,7 +21,7 @@ npx skills add greglamb/gcodetour --list                       # list every skil
 npx skills add greglamb/gcodetour --skill gcodetour-author -a claude-code -y   # non-interactive, Claude Code only
 ```
 
-Once installed, ask Claude something like _"create a gCodeTour walkthrough of this codebase"_ and the skill will survey the project and produce a pattern-anchored, schema-valid `.tour` file.
+Once installed, ask Claude something like _"create a gCodeTour walkthrough of this codebase"_ and the skill will survey the project and produce a pattern-anchored, schema-valid `.tour` file. It can also generate **synchronized diagrams** — C4-PlantUML architecture/flow views and activity swim lanes — and weave them into the tour as [diagram steps](#diagram-steps).
 
 ## Getting Started
 
@@ -39,8 +39,6 @@ To get started, install gCodeTour by downloading the latest `.vsix` from the [Re
 If you'd like to record a code tour for your codebase, you can simply click the `+` button in the `gCodeTour` tree view (if it's visible) and/or run the `gCodeTour: Record Tour` command. This will start the tour recorder, which allows you to begin opening files, clicking the "comment bar" for the line you want to annotate, and then adding the respective description (including markdown!). Add as many steps as you want, and then when done, simply click the stop tour action (the red square button). You can also create [directory steps](#directory-steps), [selection steps](#text-selection), or [content steps](#content-steps) in order to add an introductory or intermediate explanations to a tour.
 
 While you're recording, the `gCodeTour` [tree view](#tree-view) will display the currently recorded tour, and it's current set of steps. You can tell which tour is being recorded because it will have a microphone icon to the left of its name.
-
-<img width="800px" src="https://user-images.githubusercontent.com/116461/76165260-c6c00500-6112-11ea-9cda-0a6cb9b72e8f.gif" />
 
 If you need to edit or delete a step while recording, click the `...` menu next to the step's description, and select the appropriate action. Alternatively, you can edit/delete steps from the gCodeTour [tree view](#tree-view).
 
@@ -225,7 +223,11 @@ If you want to call out a directory as part of a tour, then while recording, you
 
 ### Diagram Steps
 
-A step can be associated with a **diagram** — an SVG (typically a C4/PlantUML architecture or flow diagram) that opens beside the editor and stays in sync with the tour. As the reader navigates, the relevant diagram element is highlighted and a short callout is pinned to it, so they see _the code_ and _the system it lives in_ at the same time. To attach a diagram to a step, add a `diagram` object:
+A step can be associated with a **diagram** — an SVG (typically a C4/PlantUML architecture or flow diagram) that opens beside the editor and stays in sync with the tour. As the reader navigates, the relevant diagram element is highlighted and a short callout is pinned to it, so they see _the code_ and _the system it lives in_ at the same time.
+
+<img width="800px" src="images/diagram-panel.png" alt="A synchronized diagram step: player.js and its tour comment thread on the left; beside it, the architecture diagram with the Player element highlighted and a callout reading 'Renders each step as a comment thread'." />
+
+To attach a diagram to a step, add a `diagram` object:
 
 ```json
 {
@@ -453,9 +455,9 @@ In order to enable other extensions to contribute/manage their own code tours, t
 
 In addition to the aforementioned functions, the extension API also allows subscribing to the following tour events:
 
-- `onDidStartTour(([tour: CodeTour, stepNumber: number]) => void): Disposable` - Registers a callback function, that is triggered whenever a tour is started or navigated. The provided callback is passed a [`gCodeTour`](https://github.com/microsoft/codetour/blob/main/src/store/index.ts#L38) instance as well as the step number that is visible.
+- `onDidStartTour(([tour: CodeTour, stepNumber: number]) => void): Disposable` - Registers a callback function, that is triggered whenever a tour is started or navigated. The provided callback is passed a [`CodeTour`](https://github.com/greglamb/gcodetour/blob/main/src/store/index.ts) instance as well as the step number that is visible.
 
-- `onDidEndTour((tour: CodeTour) => void): Disposable` - Registers a callback function, that is triggered whenever a tour is ended. The provided callback is passed a [`gCodeTour`](https://github.com/microsoft/codetour/blob/main/src/store/index.ts#L38) instance, which represents the metadata of the tour that was ended.
+- `onDidEndTour((tour: CodeTour) => void): Disposable` - Registers a callback function, that is triggered whenever a tour is ended. The provided callback is passed a [`CodeTour`](https://github.com/greglamb/gcodetour/blob/main/src/store/index.ts) instance, which represents the metadata of the tour that was ended.
 
 ```javascript
 // Check if the end-user has the gCodeTour extension installed.

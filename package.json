@@ -731,6 +731,7 @@
     "test:unit": "c8 mocha",
     "test:integration": "npm run compile && npm run build && vscode-test",
     "test:ui": "npm run build && playwright test",
+    "screenshot": "npm run build && SCREENSHOTS=1 playwright test screenshot.gen",
     "build:web-test": "node esbuild.web-test.mjs",
     "test:web": "npm run build && npm run build:web-test && vscode-test-web --browserType=chromium --extensionDevelopmentPath=. --extensionTestsPath=dist/test/web-integration/index.js ./test-fixtures/workspace",
     "test:web:headless": "npm run test:web -- --headless",
