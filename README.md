@@ -11,21 +11,13 @@ gCodeTour is a Visual Studio Code extension, which allows you to record and play
 This fork ships a [Claude Code](https://claude.com/claude-code) skill, **`gcodetour-author`**, that helps Claude generate schema-valid `.tour` files for your own codebase. Install it into your project with the [`skills`](https://github.com/vercel-labs/skills) CLI:
 
 ```sh
-npx skills add greglamb/gcodetour --skill gcodetour-author
+npx skills add greglamb/gcodetour --skill gcodetour-author -a claude-code
 ```
 
-The `skills` CLI takes the repo (`greglamb/gcodetour`) and selects the skill by name via `--skill`; it isn't a path to the skill folder. Useful variations:
+To update an already-installed copy to the latest version:
 
 ```sh
-npx skills add greglamb/gcodetour --list                       # list every skill in the repo
-npx skills add greglamb/gcodetour --skill gcodetour-author -a claude-code -y   # non-interactive, Claude Code only
-```
-
-**Getting the latest version.** `add` always pulls the skill's current state from this repo, so a first install is already up to date. If you installed it earlier and want to pick up updates, upgrade the existing copy in place (the `skills` CLI tracks installs in `skills-lock.json`):
-
-```sh
-npx skills update gcodetour-author        # update this skill to the latest
-npx skills update -y                       # update every installed skill
+npx skills update gcodetour-author
 ```
 
 Once installed, ask Claude something like _"create a gCodeTour walkthrough of this codebase"_ and the skill will survey the project and produce a pattern-anchored, schema-valid `.tour` file. It can also generate **synchronized diagrams** — C4-PlantUML architecture/flow views and activity swim lanes — and weave them into the tour as [diagram steps](#diagram-steps).
