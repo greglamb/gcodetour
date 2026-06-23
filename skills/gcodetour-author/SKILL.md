@@ -54,6 +54,11 @@ PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, o
 
 **Heads-up (why `materia-outline` is the default):** a theme's colors are baked into the SVG at render time and do **not** adapt to the reader's light/dark editor — only the gCodeTour highlight/callout chrome follows the VS Code theme. `materia-outline` is light with clean outlines, so it reads on both light and dark editors. Pick a dark theme (e.g. `superhero-outline`) only when you know the audience uses dark editors. Re-run `scripts/render-diagrams.sh` after changing a theme.
 
+**Give every diagram an opaque background (so it reads on any editor theme).** The diagram panel's background follows the reader's VS Code theme, which is unknown at render time — so a transparent diagram with dark text becomes unreadable on a dark editor. Make each diagram a self-contained "card" by baking a background **matched to its own theme** (not the reader's): light theme → a light background, dark theme → a dark one.
+
+- **C4 diagrams** already bake a white background automatically — nothing to do.
+- **Activity / swim-lane diagrams** are transparent by default, so add `skinparam backgroundColor <color>` right after the `!theme` line — `#FFFFFF` for the default `materia-outline` (or any light theme); a dark color (e.g. `#1B1B1B`) only if you switched to a dark theme. Use `skinparam backgroundColor`, not a hand-drawn full-canvas rectangle — you don't know the canvas size ahead of time, and the skinparam is the idiomatic one-liner.
+
 ### Choosing a diagram type
 
 - **System Context / Container** → "where does this fit" overview steps, usually near the start.

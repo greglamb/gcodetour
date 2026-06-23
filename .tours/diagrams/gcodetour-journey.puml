@@ -2,6 +2,9 @@
 ' Activity swim lane (no Graphviz, no C4 include) of the developer's journey.
 ' Nodes are tagged with [[ct://el/<alias>]]. Render: scripts/render-diagrams.sh
 !theme materia-outline
+' Opaque background so the diagram reads on any VS Code editor theme (the panel
+' background follows the reader's theme; C4 diagrams bake this automatically).
+skinparam backgroundColor #FFFFFF
 
 title gCodeTour — developer journey
 
