@@ -41,7 +41,17 @@
               "end": { "type": "object", "required": ["line", "character"], "properties": { "line": { "type": "number" }, "character": { "type": "number" } } }
             }
           },
-          "commands": { "type": "array", "description": "Command URIs executed when this step is navigated to.", "default": [], "items": { "type": "string" } }
+          "commands": { "type": "array", "description": "Command URIs executed when this step is navigated to.", "default": [], "items": { "type": "string" } },
+          "diagram": {
+            "type": "object",
+            "description": "Associates the step with a diagram (an SVG rendered from PlantUML/C4) shown beside the editor and highlighted in sync with the tour. (Fork-only.)",
+            "required": ["path"],
+            "properties": {
+              "path": { "type": "string", "description": "Workspace-relative path to the SVG to display (e.g. .tours/diagrams/flow.svg)." },
+              "element": { "type": "string", "description": "Alias of the element to highlight. Must match an element tagged with a 'ct://el/<alias>' hyperlink in the diagram source. Omit to show the diagram unhighlighted." },
+              "callout": { "type": "string", "description": "Optional short, one-line label pinned near the highlighted element." }
+            }
+          }
         }
       }
     },

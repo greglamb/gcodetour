@@ -44,6 +44,7 @@ At least `description` is required. Everything else is optional, but a step almo
 | `commands` | array of string | VS Code command URIs run when the step is navigated to, e.g. `codetour.endTour?[2]`. |
 | `contents` | string | **Fork-only.** Inline content shown for the step instead of pointing at a `file`/`uri` on disk. Use for conceptual/reference steps that aren't tied to a real source line (embedded snippets, diagrams, invariants). Mutually exclusive in spirit with `file`/`uri`/`directory` — set only one anchor. |
 | `icon` | string | **Fork-only.** Icon for the step in the CodeTour tree: a workspace-relative path, URL, or data URI. Cosmetic; safe to omit. |
+| `diagram` | object | **Fork-only.** `{ path, element?, callout? }` — shows an SVG beside the editor and highlights an element in sync with the tour. See [Diagram steps](#diagram-steps). Combine freely with a `file`/`line` anchor for code-and-diagram-in-lockstep. |
 | `markerTitle` | string | **Derived / read-only — never author this.** The player computes it from a step's marker comment in the source, and the recorder strips it on save (`delete step.markerTitle`). Present in the schema for completeness only; setting it by hand has no effect. The skill must not emit it. |
 
 ### Step types
@@ -51,6 +52,45 @@ At least `description` is required. Everything else is optional, but a step almo
 - **Directory step** — `directory` + `description`. Focuses the folder in Explorer; good for "here's where X lives" without a specific line.
 - **Content step** — `description` only, no anchor. An intro/interstitial rendered in a virtual document. Use one as step 1 to frame the tour.
 - **Inline-contents step (fork-only)** — `contents` + `description`. Renders the `contents` string as the step's document body. Unlike a plain content step (which only shows the `description`), this displays an arbitrary embedded snippet/diagram with no file on disk. Use for reference material you want visible in the editor pane, not just the comment.
+- **Diagram step (fork-only)** — any step with a `diagram` object. Shows an SVG beside the editor and highlights an element. Can be layered on any of the above (a content step for an overview diagram, or a file/line step for code-and-diagram together). See below.
+
+## Diagram steps
+
+A step's optional `diagram` object pairs the step with an architecture/flow diagram (an SVG, typically rendered from PlantUML/C4) that opens beside the editor and stays in sync with the tour. As the reader navigates, the referenced element is highlighted and an optional callout is pinned to it.
+
+| Property | Type | Notes |
+|---|---|---|
+| `path` | string | **Required.** Workspace-relative path to the SVG (e.g. `.tours/diagrams/flow.svg`). |
+| `element` | string | Alias of the element to highlight. Omit for an overview step that shows the diagram with nothing highlighted. |
+| `callout` | string | Short, one-line label pinned near the highlighted element. |
+
+```jsonc
+{
+  "file": "src/Enrichment.cs",
+  "line": 42,
+  "description": "The worker polls the queue here…",
+  "diagram": {
+    "path": ".tours/diagrams/flow.svg",
+    "element": "enrichQ",
+    "callout": "Polls OrderCreated, batches of 10"
+  }
+}
+```
+
+### The `ct://el/<alias>` sentinel convention
+
+PlantUML emits no stable per-element IDs, but it wraps any element given a **hyperlink** in an `<a href>`. So elements are made addressable by tagging each with a sentinel link `ct://el/<alias>`; the player resolves a step's `diagram.element` by finding the `<a>` whose href is `ct://el/<alias>`. The link is inert (the player neutralizes clicks).
+
+- **C4-PlantUML elements** — pass the `$link` parameter:
+  `Container(api, "Order API", "C#", "Accepts orders", $link="ct://el/orderApi")`
+- **Activity / swim-lane nodes** — append the link form:
+  `:Validate order [[ct://el/validate]];`
+
+Aliases must be stable, human-meaningful, and **exactly equal** the `diagram.element` values written into the tour. Re-rendering must keep aliases stable — never key them off layout or order.
+
+### Rendering (authoring time only)
+
+Diagram sources live in `.tours/diagrams/*.puml` and render to sibling `*.svg` via [`scripts/render-diagrams.sh`](../../../scripts/render-diagrams.sh) (a digest-pinned Kroki Docker image; C4 includes vendored under `.tours/diagrams/vendor/c4`). Commit the rendered `.svg` files — **playback never runs the renderer**, it just loads the committed SVG. C4 sources start with `!$RELATIVE_INCLUDE = "."` then `!include C4_Container.puml` (etc.) so the vendored includes resolve offline.
 
 ## Step anchoring rules
 
@@ -112,6 +152,9 @@ For onboarding docs that must stay correct, pin to a tag or commit. For living t
 | `codetour.recordMode` | `lineNumber` | Recorder anchor mode (`lineNumber` \| `pattern`). |
 | `codetour.showMarkers` | true | Gutter markers on lines that participate in a tour. |
 | `codetour.customTourDirectory` | — | Extra directory to discover tours in. |
+| `codetour.diagram.enabled` | true | Master toggle for [diagram steps](#diagram-steps). |
+| `codetour.diagram.openBeside` | true | Open the diagram beside the editor (vs. the active group). |
+| `codetour.diagram.onNonDiagramStep` | `keep` | On a step without a diagram: `keep` the last one visible or `hide` it. |
 
 ## Drift detection
 

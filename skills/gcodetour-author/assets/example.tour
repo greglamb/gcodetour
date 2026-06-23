@@ -8,12 +8,20 @@
   "steps": [
     {
       "title": "Welcome",
-      "description": "## Welcome to the codebase\n\nThis tour follows a single request end-to-end so you can build a mental model before diving in.\n\nWe'll cover, in order: app bootstrap, the HTTP layer, routing, a representative controller, and the data-access boundary.\n\nFirst, get it running locally:\n\n>> npm install && npm run dev\n\nUse `Cmd/Ctrl + →` to advance."
+      "description": "## Welcome to the codebase\n\nThis tour follows a single request end-to-end so you can build a mental model before diving in.\n\nWe'll cover, in order: app bootstrap, the HTTP layer, routing, a representative controller, and the data-access boundary.\n\nFirst, get it running locally:\n\n>> npm install && npm run dev\n\nUse `Cmd/Ctrl + →` to advance.",
+      "diagram": {
+        "path": ".tours/diagrams/architecture.svg"
+      }
     },
     {
       "file": "src/index.js",
       "pattern": "const app = express\\(\\)",
-      "description": "### Bootstrap\n\nThe application instance is created here. Middleware and routers are attached below this line; tracing the order of `app.use(...)` calls tells you the request pipeline."
+      "description": "### Bootstrap\n\nThe application instance is created here. Middleware and routers are attached below this line; tracing the order of `app.use(...)` calls tells you the request pipeline.",
+      "diagram": {
+        "path": ".tours/diagrams/architecture.svg",
+        "element": "app",
+        "callout": "App bootstrap & middleware"
+      }
     },
     {
       "file": "src/middleware/auth.js",

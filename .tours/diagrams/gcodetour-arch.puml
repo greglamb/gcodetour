@@ -1,0 +1,26 @@
+@startuml
+' C4 Container view of gCodeTour's playback architecture. Each addressable
+' element carries a ct://el/<alias> sentinel via $link. Render: scripts/render-diagrams.sh
+!$RELATIVE_INCLUDE = "."
+!include C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title gCodeTour — playback architecture
+
+Person(dev, "Developer", "Takes a guided tour", $link="ct://el/dev")
+System_Boundary(ext, "gCodeTour extension") {
+  Container(provider, "Tour Provider", "TypeScript", "Discovers and watches .tour files", $link="ct://el/provider")
+  Container(store, "MobX Store", "TypeScript", "Holds the active tour and step", $link="ct://el/store")
+  Container(player, "Player", "TypeScript", "Renders each step as a comment thread", $link="ct://el/player")
+  Container(diagram, "Diagram Panel", "TypeScript + webview", "Shows synchronized diagrams", $link="ct://el/diagram")
+}
+ContainerDb(files, ".tour files", "JSON", "Stored under .tours/", $link="ct://el/files")
+
+Rel(dev, player, "Navigates steps")
+Rel(provider, files, "Reads")
+Rel(provider, store, "Populates")
+Rel(store, player, "Drives (MobX reaction)")
+Rel(store, diagram, "Drives (onDidStartTour)")
+
+@enduml

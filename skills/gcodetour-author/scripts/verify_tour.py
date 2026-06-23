@@ -13,6 +13,8 @@ Checks (standard library only):
   - Each directory step points at a real directory
   - No step sets `markerTitle` (derived/read-only; the player strips it on save)
   - file+line (ordinal) steps are allowed but flagged as fragile
+  - Each `diagram` step: the SVG exists and (if `element` is set) contains a
+    matching `ct://el/<element>` hyperlink anchor
 
 If the `jsonschema` package and the bundled references/schema.json are both
 available, full JSON Schema (draft-04) validation runs too; otherwise it is
@@ -80,6 +82,33 @@ def check_step(index, step, repo_root):
     return True, f"step {index}: content step (no anchor)"
 
 
+def check_diagram(index, step, repo_root):
+    """Return (ok, message) for a step's `diagram`, or None if it has none."""
+    diagram = step.get("diagram")
+    if diagram is None:
+        return None
+    if not isinstance(diagram, dict):
+        return False, f"step {index}: diagram must be an object"
+
+    path = diagram.get("path")
+    if not isinstance(path, str) or not path:
+        return False, f"step {index}: diagram.path missing or not a string"
+
+    svg_path = Path(repo_root) / path
+    if not svg_path.is_file():
+        return False, f"step {index}: diagram svg {path} -> MISSING"
+
+    element = diagram.get("element")
+    if element is None:
+        return True, f"step {index}: diagram {path} (no element highlighted) -> ok"
+
+    text = svg_path.read_text(errors="replace")
+    anchor = re.compile(r'(?:xlink:)?href="ct://el/' + re.escape(element) + r'"')
+    if anchor.search(text):
+        return True, f"step {index}: diagram element '{element}' -> resolved in {path}"
+    return False, f"step {index}: diagram element '{element}' -> NO ct://el/ anchor in {path}"
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__)
@@ -122,6 +151,12 @@ def main(argv):
         good, message = check_step(index, step, repo_root)
         print(("  " if good else "  FAIL ") + message)
         ok = ok and good
+
+        diagram_result = check_diagram(index, step, repo_root)
+        if diagram_result is not None:
+            dgood, dmessage = diagram_result
+            print(("  " if dgood else "  FAIL ") + dmessage)
+            ok = ok and dgood
 
     print("=> ALL PASS" if ok else "=> FAILURES PRESENT")
     return 0 if ok else 1
