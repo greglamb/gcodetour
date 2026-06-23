@@ -35,7 +35,7 @@ Three tiers:
 
 - **Unit** — `npm run test:unit` (or `npm test`): Mocha + `c8` over pure logic.
   Tests live in `src/test/unit/**`, compiled to `out/test/unit/**` (`.mocharc.yml`).
-  Coverage is gated in `.c8rc.json`. **This is the only tier run in CI.**
+  Coverage is gated in `.c8rc.json`. **This is the only tier `verify` runs.**
 - **Integration** — `npm run test:integration`: `@vscode/test-cli` /
   `@vscode/test-electron` launch a real VS Code against `test-fixtures/workspace`
   (config in `.vscode-test.mjs`). Tests in `src/test/integration/**`. Local-only.
@@ -52,8 +52,10 @@ Conventions:
   its **compiled** path to `.c8rc.json` `include` (e.g. `out/tourLabels.js`). Code that
   imports `vscode` belongs in the integration/UI tiers, not unit tests.
 - `c8` `include` globs match the **compiled** path (`out/...js`), not the `.ts` source.
-- CI runs unit tests only; integration/UI need a real VS Code / browser and run locally
-  (CI sets `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`).
+- `verify` runs the unit tier only; integration/UI need a real VS Code / browser and run
+  locally. There is no push/PR CI — `verify` runs inside the manual Release workflow
+  (which sets `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`), so run `npm run verify` yourself
+  before pushing.
 - `@greglamb/vscode-test-playwright` is a **git dependency** pinned to a commit SHA in
   `package-lock.json`, so `npm install` will **not** pull newer lib commits on its own.
   To pick up lib updates, run `npm update @greglamb/vscode-test-playwright` and commit
@@ -117,6 +119,8 @@ implemented in `scripts/calver.mjs`; bump with
 
 Releases are **GitHub-only** — this fork does **not** publish to the VS Marketplace.
 Flow: `npm run version:bump` → commit & push → run the **Release** workflow manually
-(Actions tab → Release → Run workflow). It packages the `.vsix` and **creates** a
-GitHub Release tagged `v<version>` with the `.vsix` attached (`gh release create`).
-CI (`ci.yml`) runs `verify` on every push/PR. Do not add `vsce publish` / marketplace steps.
+(Actions tab → Release → Run workflow). It runs `verify` (format, lint, compile, unit
+tests, build) as a gate, then packages the `.vsix` and **creates** a GitHub Release
+tagged `v<version>` with the `.vsix` attached (`gh release create`). `verify` only runs
+there — there is no separate push/PR CI workflow — so run it locally before pushing.
+Do not add `vsce publish` / marketplace steps.
