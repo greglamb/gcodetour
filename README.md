@@ -223,6 +223,29 @@ When you create a content step, you'll be asked for a title of the step (e.g. `I
 
 If you want to call out a directory as part of a tour, then while recording, you can right-click a directory in the `Explorer` tree and select `Add gCodeTour Step`. This will create a new step that allows you to add a description for the selected directory. When the tour is played back, the directory will be focused in the `Explorer` tree, and the viewer will be presented with the description in a "virtual" gCodeTour document.
 
+### Diagram Steps
+
+A step can be associated with a **diagram** — an SVG (typically a C4/PlantUML architecture or flow diagram) that opens beside the editor and stays in sync with the tour. As the reader navigates, the relevant diagram element is highlighted and a short callout is pinned to it, so they see _the code_ and _the system it lives in_ at the same time. To attach a diagram to a step, add a `diagram` object:
+
+```json
+{
+  "file": "src/Enrichment.cs",
+  "line": 42,
+  "description": "The enrichment service polls the queue here…",
+  "diagram": {
+    "path": ".tours/diagrams/enrichment-flow.svg",
+    "element": "enrichQ",
+    "callout": "Polls OrderCreated, batches of 10"
+  }
+}
+```
+
+- `path` (required) is the workspace-relative SVG to display.
+- `element` (optional) is the alias of the element to highlight. Elements are made addressable by tagging them in the diagram source with a `ct://el/<alias>` hyperlink; PlantUML wraps any linked element in an `<a>`, which the player resolves. Omit it to show the diagram with nothing highlighted.
+- `callout` (optional) is a short, one-line label pinned near the highlighted element.
+
+Diagrams are rendered in a sandboxed webview (strict CSP, with the SVG sanitized) and require nothing beyond VS Code to play back — the diagram authoring/rendering toolchain lives in the [`gcodetour-author` skill](#authoring-tours-with-ai), not on the reader's machine. The feature is optional and additive: tours without a `diagram` field are unaffected, and it can be toggled with the `codetour.diagram.*` [settings](#configuration-settings).
+
 ### Tour Files
 
 Behind the scenes, the tour will be written as a JSON file to the `.tours` directory of the current workspace. This file is pretty simple and can be hand-edited if you'd like. Additionally, you can manually create tour files, by following the [tour schema](#tour-schema). You can then store these files to the `.tours` (or `.vscode/tours` or `.github/tours`) directory, or you can also create a tour at any of the following well-known locations: `.tour`, `main.tour`, `.vscode/main.tour`.
@@ -398,6 +421,12 @@ The `gCodeTour` extension contributes the following settings:
 - `Codetour > Show Markers` - Specifies whether or not to show [tour markers](#tour-markers). Defaults to `true`.
 
 - `Codetour > Custom Tour Directory` - Specifies the name of a custom directory path that tours can be stored in within an opened workspace (e.g. `docs/tours`).
+
+- `Codetour > Diagram: Enabled` - Specifies whether to show synchronized [diagrams](#diagram-steps) beside the editor when a step references one. Defaults to `true`.
+
+- `Codetour > Diagram: Open Beside` - Specifies whether the diagram panel opens beside the editor (`true`) or in the active editor group (`false`). Defaults to `true`.
+
+- `Codetour > Diagram: On Non Diagram Step` - Specifies what happens to the diagram panel when navigating to a step that has no diagram: `keep` (leave the last diagram visible) or `hide` (blank the panel). Defaults to `keep`.
 
 ### Keybindings
 

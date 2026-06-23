@@ -47,9 +47,11 @@ export async function run(): Promise<void> {
     // Expose BDD globals (describe/it/before) when bypassing Mocha's file loader.
     mocha.suite.emit("pre-require", globalThis, "", mocha);
 
-    // esbuild resolves this at bundle time.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // esbuild resolves these at bundle time.
+    /* eslint-disable @typescript-eslint/no-require-imports */
     require("./extension.test");
+    require("./diagram.test");
+    /* eslint-enable @typescript-eslint/no-require-imports */
 
     const timeout = setTimeout(() => {
       reject(new Error("Mocha run timed out after 120s"));

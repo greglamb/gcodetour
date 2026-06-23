@@ -3,7 +3,7 @@
   "displayName": "gCodeTour",
   "description": "VS Code extension that allows you to record and playback guided tours of codebases, directly within the editor",
   "publisher": "greglamb",
-  "version": "0.2606.2201",
+  "version": "0.2606.2202",
   "author": {
     "name": "Microsoft Corporation"
   },
@@ -71,6 +71,29 @@
           "type": "string",
           "default": null,
           "description": "Specifies a custom location to use when discovering tours."
+        },
+        "codetour.diagram.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Specifies whether to show synchronized diagrams beside the editor when a tour step references one (via the step's `diagram` property)."
+        },
+        "codetour.diagram.openBeside": {
+          "type": "boolean",
+          "default": true,
+          "description": "Specifies whether the diagram panel opens beside the editor (true) or in the active editor group (false)."
+        },
+        "codetour.diagram.onNonDiagramStep": {
+          "type": "string",
+          "enum": [
+            "keep",
+            "hide"
+          ],
+          "enumDescriptions": [
+            "Leave the previously shown diagram visible.",
+            "Blank the diagram panel."
+          ],
+          "default": "keep",
+          "description": "Specifies what happens to the diagram panel when navigating to a step that has no diagram."
         }
       }
     },
@@ -697,7 +720,8 @@
     "webpack-merge": "^5.8.0"
   },
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "npm run build:diagram && webpack --mode production",
+    "build:diagram": "node esbuild.diagram.mjs",
     "vscode:prepublish": "npm run build",
     "watch": "webpack --mode development --watch",
     "package": "vsce package",
@@ -710,8 +734,8 @@
     "build:web-test": "node esbuild.web-test.mjs",
     "test:web": "npm run build && npm run build:web-test && vscode-test-web --browserType=chromium --extensionDevelopmentPath=. --extensionTestsPath=dist/test/web-integration/index.js ./test-fixtures/workspace",
     "test:web:headless": "npm run test:web -- --headless",
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"esbuild.web-test.mjs\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"esbuild.web-test.mjs\"",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"esbuild.web-test.mjs\" \"esbuild.diagram.mjs\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"esbuild.web-test.mjs\" \"esbuild.diagram.mjs\"",
     "lint": "eslint src --ext ts",
     "verify": "npm run format:check && npm run lint && npm run compile && npm run test:unit && npm run build"
   },

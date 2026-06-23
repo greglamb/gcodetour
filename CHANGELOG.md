@@ -4,6 +4,10 @@
 - Automatically set the "pattern" record mode when you create a new tour, and select `None` for the git ref
 - Added support for opening a `*.tour` file in the VS Code notebook editor (Insiders only)
 
+## v0.2606.2202 (06/23/26)
+
+- **Synchronized diagram steps**: a tour step can now reference a `diagram` (an SVG) that opens beside the editor and highlights an element with a short callout, kept in sync as you navigate the tour. Diagrams render inline in a sandboxed webview (strict CSP, SVG sanitized); elements are targeted by an author-assigned `ct://el/<alias>` sentinel link. Controlled by the new `codetour.diagram.enabled` / `codetour.diagram.openBeside` / `codetour.diagram.onNonDiagramStep` settings. All existing tours play unchanged — the `diagram` field is optional and additive.
+
 ## v0.0.61 (08/06/25)
 
 - Fix the display name that's used when dragging the `CodeTour` view into another panel

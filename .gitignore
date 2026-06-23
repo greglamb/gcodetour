@@ -1,5 +1,6 @@
 dist
 out
+media/diagram
 node_modules
 .vscode-test/
 .vscode-test-web/
