@@ -4,6 +4,18 @@
 - Automatically set the "pattern" record mode when you create a new tour, and select `None` for the git ref
 - Added support for opening a `*.tour` file in the VS Code notebook editor (Insiders only)
 
+## v0.2606.2302 (06/23/26)
+
+- **Diagram panel** fixes from real-world use:
+  - **No more distortion.** PlantUML SVGs (which carry `preserveAspectRatio="none"`) were stretched to the panel; the diagram now renders at its natural size with scrollbars and uniform scaling.
+  - **Scroll-to-highlight.** As you navigate, the highlighted element is scrolled into view when it's off-screen, and the callout stays pinned to it.
+  - **Sentinel links no longer look like links.** Activity/swim-lane node labels were drawn as orange, underlined hyperlinks (clashing with normal text); they now match the diagram's normal node text, like C4 elements already did.
+- **Comments panel** stays closed during a tour. Because each step renders as a comment thread, VS Code would auto-open the bottom Comments panel; gCodeTour now sets `comments.openView` to `never` while a tour plays and restores your previous value when it ends.
+
+## v0.2606.2301 (06/23/26)
+
+- Fixed `getTourTitle` truncating a numbered tour title that contains a second hyphen (e.g. `1 - Jobs - Phase 2` resolved to just `Jobs`), which also broke `[Tour Title]` references to such tours.
+
 ## v0.2606.2205 (06/23/26)
 
 - No changes to the extension runtime. Diagram **authoring/tooling** improvements since the previous release: the diagram renderer is pinned to Kroki 0.31.0; the `gcodetour-author` skill now defaults activity/swim-lane diagrams to `materia-outline` (with an opaque background so they read on any editor theme) and C4 diagrams to `C4_blue_new`. Release pipeline now runs `verify` as a gate and pins each release tag to the exact built commit.

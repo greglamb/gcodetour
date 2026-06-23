@@ -91,7 +91,7 @@ At any time, you can right-click a tour in the `gCodeTour` tree and change it's 
 
 ### Linking Tours
 
-If you want to create a series of tours, that a user can navigate through in sequence, then simply prefix your tour title's with the number they represent in the tour order (e.g. `1: Foo`, `2 - Bar`). When your tours are titled like this, the tour player will automatically provide the following benefis to your readers:
+If you want to create a series of tours, that a user can navigate through in sequence, then simply prefix your tour title's with the number they represent in the tour order (e.g. `1: Foo`, `2 - Bar`). When your tours are titled like this, the tour player will automatically provide the following benefits to your readers:
 
 1. If the current tour has a subsequent tour, then it's final step will display a `Next Tour` link instead of the `Finish Tour` link. This allows users to easily jump to the next tour.
 
@@ -131,7 +131,7 @@ Additionally, you can reference local images in a step as well, using a markdown
 
 #### Step References
 
-If you want to add a reference to another step within the current tour, you can use markdown's "link reference" syntax, specifying the 1-based number of the step to navigate to, prefixed by a `#` character (e.g. `[#2]`, or `[#23]`). This reference will be automatically rendered as a hyperlink, that when clicked, will navigate the end-user to that step. The text of the link will default to `#<stepNumber>`, but you can customize that by appending a title to the link reference (e.g. `[title][#2]).
+If you want to add a reference to another step within the current tour, you can use markdown's "link reference" syntax, specifying the 1-based number of the step to navigate to, prefixed by a `#` character (e.g. `[#2]`, or `[#23]`). This reference will be automatically rendered as a hyperlink, that when clicked, will navigate the end-user to that step. The text of the link will default to `#<stepNumber>`, but you can customize that by appending a title to the link reference (e.g. `[title][#2]`).
 
 > This syntax is a simplified version of using the `Navigate to tour step` [command link](#command-links) manually.
 
@@ -181,7 +181,7 @@ In order to make it simpler to call common commands, gCodeTour will prompt you w
 
 * `Run task` - Allows you to specify a workspace task name, that when clicked, will run the specified task as defined by the current workspace's `task.json` file.
 
-- `Run test task` - Allows you to run the butestild task, as defined by the current workspace's `task.json` file.
+- `Run test task` - Allows you to run the test task, as defined by the current workspace's `task.json` file.
 
 - `Run terminal command...` - Allows you to specify a shell command (e.g. `npm run package`), that when clicked, will run the specified command in the integrated terminal.
 
@@ -245,7 +245,9 @@ To attach a diagram to a step, add a `diagram` object:
 - `element` (optional) is the alias of the element to highlight. Elements are made addressable by tagging them in the diagram source with a `ct://el/<alias>` hyperlink; PlantUML wraps any linked element in an `<a>`, which the player resolves. Omit it to show the diagram with nothing highlighted.
 - `callout` (optional) is a short, one-line label pinned near the highlighted element.
 
-Diagrams are rendered in a sandboxed webview (strict CSP, with the SVG sanitized) and require nothing beyond VS Code to play back — the diagram authoring/rendering toolchain lives in the [`gcodetour-author` skill](#authoring-tours-with-ai), not on the reader's machine. The feature is optional and additive: tours without a `diagram` field are unaffected, and it can be toggled with the `codetour.diagram.*` [settings](#configuration-settings).
+The diagram renders at its natural size with scrollbars; as you navigate, the highlighted element is scrolled into view. Diagrams are rendered in a sandboxed webview (strict CSP, with the SVG sanitized) and require nothing beyond VS Code to play back — the diagram authoring/rendering toolchain lives in the [`gcodetour-author` skill](#authoring-tours-with-ai), not on the reader's machine. The feature is optional and additive: tours without a `diagram` field are unaffected, and it can be toggled with the `codetour.diagram.*` [settings](#configuration-settings).
+
+> While a tour is playing, gCodeTour keeps VS Code's bottom **Comments** panel from auto-opening (it temporarily sets `comments.openView` to `never` and restores your previous value when the tour ends), since each step is rendered as a comment thread.
 
 ### Tour Files
 
@@ -272,7 +274,7 @@ Within the `.tours` (or `.vscode/tours`) directory, you can organize your tour f
   - `commands` - An array of VS Code command strings, that indicate the name of a command (e.g. `codetour.endTour`) and any optional parameters to pass to it, specified as a query string array (eg. `codetour.endTour?[2]`).
   - `view` - The ID of a VS Code view that will be automatically focused when this step is navigated to.
 
-For an example, refer to the `.tours/tree.tour` file of this repository.
+For an example, refer to the `.tours/intro.tour` and `.tours/diagram-demo.tour` files of this repository.
 
 ## Exporting Tours
 
@@ -465,7 +467,7 @@ const codeTourExtension = vscode.extensions.getExtension(
 );
 if (codeTourExtension) {
   // Grab the extension API.
-  const codeTourApi = codeTour.exports;
+  const codeTourApi = codeTourExtension.exports;
 
   // Use the API object as needed
   codeTourApi.onDidStartTour(([tour, stepNumber]) => {
