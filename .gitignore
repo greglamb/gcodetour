@@ -10,3 +10,4 @@ playwright-report
 *.vsix
 .DS_Store
 .claude/settings.local.json
+__pycache__/

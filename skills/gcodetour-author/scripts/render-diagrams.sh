@@ -132,13 +132,23 @@ for puml in "$DIAGRAM_DIR"/*.puml; do
   [ -e "$puml" ] || continue
   svg="${puml%.puml}.svg"
   printf 'Rendering %s -> %s ... ' "$(basename "$puml")" "$(basename "$svg")"
-  if curl -fsS --max-time 60 -X POST "$BASE_URL/plantuml/svg" \
-    --data-binary "@$puml" -o "$svg"; then
+  # Content-Type: text/plain is REQUIRED. Without it curl sends
+  # application/x-www-form-urlencoded, which Kroki form-decodes — and any
+  # non-trivial diagram then trips Netty's field-length limit (HTTP 400,
+  # TooLongFormFieldException). We also drop curl's -f so the response body is
+  # written to $svg and the HTTP status is captured, making failures diagnosable.
+  code="$(curl -sS --max-time 60 -X POST "$BASE_URL/plantuml/svg" \
+    -H 'Content-Type: text/plain' --data-binary "@$puml" \
+    -o "$svg" -w '%{http_code}')" || code="000"
+  if [ "$code" = "200" ]; then
     node "$EMBED_SCRIPT" "$svg" "$FONT_REGULAR" "$FONT_BOLD"
     echo "ok"
     rendered=$((rendered + 1))
   else
-    echo "FAILED"
+    echo "FAILED (HTTP $code)"
+    echo "  response: $(head -c 300 "$svg" 2>/dev/null | tr '\n' ' ')"
+    echo "  renderer logs (last 15 lines — the real cause is usually here):"
+    docker logs --tail 15 "$CONTAINER_ID" 2>&1 | sed 's/^/    /'
     rm -f "$svg"
     failed=$((failed + 1))
   fi

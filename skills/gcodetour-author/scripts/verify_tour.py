@@ -13,13 +13,15 @@ Checks (standard library only):
   - Each directory step points at a real directory
   - No step sets `markerTitle` (derived/read-only; the player strips it on save)
   - file+line (ordinal) steps are allowed but flagged as fragile
-  - Each `diagram` step: the SVG exists and (if `element` is set) contains a
-    matching `ct://el/<element>` hyperlink anchor
+  - Each `diagram` step: the SVG exists, carries no PlantUML warning/error baked
+    into the image (e.g. a deprecation notice), and (if `element` is set) contains
+    a matching `ct://el/<element>` hyperlink anchor
 
 If the `jsonschema` package and the bundled references/schema.json are both
 available, full JSON Schema (draft-04) validation runs too; otherwise it is
 skipped with a notice and the structural checks above still run.
 """
+import html
 import json
 import re
 import sys
@@ -82,6 +84,31 @@ def check_step(index, step, repo_root):
     return True, f"step {index}: content step (no anchor)"
 
 
+# PlantUML draws warnings/errors as visible <text> in the SVG (spaces encoded as
+# &#160;), so a diagram can render "successfully" yet ship a defect baked into the
+# image. These are PlantUML's baked phrases — extend as you find more.
+SVG_ERROR_MARKERS = (
+    "this syntax is deprecated",
+    "an error has occurred",
+)
+
+
+def svg_baked_message(svg_text):
+    """Return a PlantUML error/warning marker baked into the SVG text, else None.
+
+    Checks each <text> element on its own (after decoding entities and the &#160;
+    word spacing PlantUML uses) so it won't false-positive by joining unrelated
+    labels into a phrase.
+    """
+    for raw in re.findall(r"<text[^>]*>(.*?)</text>", svg_text, re.S):
+        # re's \s (Unicode) already collapses the &#160; word spacing PlantUML emits.
+        norm = re.sub(r"\s+", " ", html.unescape(raw)).strip().lower()
+        for marker in SVG_ERROR_MARKERS:
+            if marker in norm:
+                return marker
+    return None
+
+
 def check_diagram(index, step, repo_root):
     """Return (ok, message) for a step's `diagram`, or None if it has none."""
     diagram = step.get("diagram")
@@ -98,11 +125,18 @@ def check_diagram(index, step, repo_root):
     if not svg_path.is_file():
         return False, f"step {index}: diagram svg {path} -> MISSING"
 
+    text = svg_path.read_text(errors="replace")
+    baked = svg_baked_message(text)
+    if baked:
+        return False, (
+            f"step {index}: diagram {path} -> PlantUML baked a message into the SVG "
+            f"(\"{baked}…\") — fix the source and re-render"
+        )
+
     element = diagram.get("element")
     if element is None:
         return True, f"step {index}: diagram {path} (no element highlighted) -> ok"
 
-    text = svg_path.read_text(errors="replace")
     anchor = re.compile(r'(?:xlink:)?href="ct://el/' + re.escape(element) + r'"')
     if anchor.search(text):
         return True, f"step {index}: diagram element '{element}' -> resolved in {path}"

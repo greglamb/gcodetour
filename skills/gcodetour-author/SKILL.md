@@ -25,7 +25,7 @@ The full schema, every markdown extension, storage locations, and config live in
 2. **Pick one narrative arc per tour.** A good tour follows a single thread end-to-end (e.g. "a request's lifecycle") rather than cataloguing every file. Split distinct concerns into separate, linked tours (`1 - ...`, `2 - ...`) instead of one sprawling tour.
 3. **Open with a content step.** Step 1 has no anchor — just a `description` that frames what the tour covers and (optionally) a `>> ` shell command to get the project running.
 4. **Write the steps in reading order**, each anchored by `pattern` (see Anchoring below). Each `description` should carry the understanding a maintainer can't get by re-reading the code: the **invariant** the code upholds ("`req.user` is assumed populated past this point"), the **decision and the alternative not taken** ("access goes through a repository so the ORM stays swappable"), and the **coupling** that will bite ("change this signature and the three callers in `routes/` break"). Narrating what a line does is wasted space — the reader can see that. Lead with a `### Heading` so the tree view is readable.
-5. **Pin the tour** to a tag or commit via `ref` so it doesn't silently desync. Set `isPrimary: true` on the entry tour.
+5. **Pin the tour** to a tag or commit via `ref` so it doesn't silently desync, and set `isPrimary: true` on the entry tour. Caveat: a commit/tag `ref` makes the tour read-only during playback, so for a tour you're authoring on a still-moving branch, pin to the **branch name** (or omit `ref`) to keep editing as the branch advances — switch to a commit/tag once it stabilizes. See the `ref` table in [references/schema.md](references/schema.md).
 6. **Self-verify** before handing it over (see Verification).
 
 ## Anchoring: use `pattern`, not `line`
@@ -102,6 +102,8 @@ stop
 
 Keep `'` comments in activity sources short and free of `[[…]]`/`<…>` link samples — a long comment block containing that syntax can break PlantUML's activity parser. Put the explanation in prose, not in the `.puml`.
 
+**Coloring activity nodes.** Use the stereotype form `:label;<<#RRGGBB>>`. The old `#RRGGBB:label;` form is **deprecated** and PlantUML bakes a literal *"This syntax is deprecated"* warning into the rendered SVG — which still ships unless caught (`verify_tour.py` now flags baked-in PlantUML messages). It composes with the sentinel link: `:[[ct://el/cache Cache hit]];<<#C8E6C9>>`.
+
 ### Render → reference loop
 
 1. Write sources to `.tours/diagrams/*.puml`. C4 files start with `!include <C4/C4_Container>` (or `<C4/C4_Dynamic>`, etc.) — C4-PlantUML ships in the renderer's bundled PlantUML stdlib, so this resolves offline with nothing vendored. Activity/swim-lane files start with `!theme materia-outline` (see [Theming](#theming)) and declare the first `|Lane|` before `start`.
@@ -125,7 +127,7 @@ Before presenting a tour, confirm it holds up. The bundled script does all the m
 python3 scripts/verify_tour.py <path-to.tour> <repo-root>
 ```
 
-It validates against the bundled fork schema (draft-04), asserts every `file`+`pattern` step resolves to **exactly one** line, checks `directory` steps exist, rejects any step that sets `markerTitle`, and — for every `diagram` step — confirms the referenced SVG exists and contains an `<a href="ct://el/<element>">` for the step's `element`. It exits non-zero on failure, so it also drops straight into CI or a pre-commit hook. It needs no dependencies; `jsonschema`, if installed, adds full schema validation on top of the structural checks. (System Python is often PEP-668 "externally managed", so `pip install jsonschema` may be refused — install it in a virtualenv, or just rely on the dependency-free structural checks.)
+It validates against the bundled fork schema (draft-04), asserts every `file`+`pattern` step resolves to **exactly one** line, checks `directory` steps exist, rejects any step that sets `markerTitle`, and — for every `diagram` step — confirms the referenced SVG exists, has no PlantUML warning/error baked into the image (e.g. the deprecated-syntax notice), and contains an `<a href="ct://el/<element>">` for the step's `element`. It exits non-zero on failure, so it also drops straight into CI or a pre-commit hook. It needs no dependencies; `jsonschema`, if installed, adds full schema validation on top of the structural checks. (System Python is often PEP-668 "externally managed", so `pip install jsonschema` may be refused — install it in a virtualenv, or just rely on the dependency-free structural checks.)
 
 - **Run the verifier** and fix anything it flags. A `pattern` matching zero or many lines is a broken step — never ship one. A `diagram.element` with no matching `ct://el/` anchor in the SVG is equally broken — re-tag the source and re-render.
 - **Set `$schema`** to `https://raw.githubusercontent.com/greglamb/gcodetour/main/schema.json` so the user's editor flags problems too.
