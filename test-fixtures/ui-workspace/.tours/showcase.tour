@@ -1,0 +1,16 @@
+{
+  "title": "Diagram Showcase",
+  "description": "Demonstrates a synchronized diagram step (used to capture the README screenshot).",
+  "steps": [
+    {
+      "file": "player.js",
+      "pattern": "function renderStep",
+      "description": "### 🎬 The Player\n\nThe player renders the active step as a comment thread beside the code — and when a step has a `diagram`, it highlights the matching element in the architecture view to the right, keeping code and system in sync as you navigate.",
+      "diagram": {
+        "path": ".tours/diagrams/showcase.svg",
+        "element": "player",
+        "callout": "Renders each step as a comment thread"
+      }
+    }
+  ]
+}
