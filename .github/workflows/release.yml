@@ -38,4 +38,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          gh release create "v$VERSION" *.vsix --title "v$VERSION" --generate-notes
+          # Pin the tag to the exact commit this workflow built ($GITHUB_SHA),
+          # so a release is always traceable to its source even if main moved.
+          gh release create "v$VERSION" *.vsix --title "v$VERSION" --target "$GITHUB_SHA" --generate-notes
