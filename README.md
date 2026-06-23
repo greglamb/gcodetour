@@ -21,6 +21,13 @@ npx skills add greglamb/gcodetour --list                       # list every skil
 npx skills add greglamb/gcodetour --skill gcodetour-author -a claude-code -y   # non-interactive, Claude Code only
 ```
 
+**Getting the latest version.** `add` always pulls the skill's current state from this repo, so a first install is already up to date. If you installed it earlier and want to pick up updates, upgrade the existing copy in place (the `skills` CLI tracks installs in `skills-lock.json`):
+
+```sh
+npx skills update gcodetour-author        # update this skill to the latest
+npx skills update -y                       # update every installed skill
+```
+
 Once installed, ask Claude something like _"create a gCodeTour walkthrough of this codebase"_ and the skill will survey the project and produce a pattern-anchored, schema-valid `.tour` file. It can also generate **synchronized diagrams** — C4-PlantUML architecture/flow views and activity swim lanes — and weave them into the tour as [diagram steps](#diagram-steps).
 
 ## Getting Started
