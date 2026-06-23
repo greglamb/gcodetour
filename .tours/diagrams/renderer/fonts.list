@@ -1,0 +1,11 @@
+# Fonts to install into the renderer image, by name, via `fnt` (apt for fonts).
+# One name per line; blank lines and #-comments are ignored. The render script's
+# image build runs `fnt install <name>` for each. The PRIMARY font (the one
+# diagrams reference with `skinparam defaultFontName` and that gets embedded into
+# every SVG) is Roboto — keep its package here; add more for measurement as needed.
+#
+# Note: `fnt` always fetches the latest font from the network at build time — it
+# does not pin versions, so this renderer is intentionally NOT a reproducible,
+# offline, digest-pinned build (unlike the rest of the toolchain). See
+# vendor/README.md.
+fonts-roboto-unhinted

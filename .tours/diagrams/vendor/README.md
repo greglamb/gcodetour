@@ -1,8 +1,9 @@
 # Vendored diagram toolchain (pinned)
 
-These are the pinned, in-repo dependencies used to render gCodeTour diagram SVGs.
-Nothing here is fetched from a remote URL at render time, and **playback of a
-tour requires none of it** — only authoring/re-rendering does (see
+These are the dependencies used to render gCodeTour diagram SVGs — the Kroki base
+and the C4 includes are pinned/vendored; **fonts** are fetched by `fnt` at image
+build time (see Fonts). **Playback of a tour requires none of it** — only
+authoring/re-rendering does (see
 [`scripts/render-diagrams.sh`](../../scripts/render-diagrams.sh)).
 
 ## Renderer
@@ -17,27 +18,34 @@ only for humans. To move to a newer Kroki, `docker pull` the new tag, copy its
 
 The renderer the script actually runs is built from
 [`../renderer/Dockerfile`](../renderer/Dockerfile): the pinned Kroki base above
-plus the vendored Roboto fonts (next section). The build uses only the committed
-files — no `apt`/network — so it's reproducible and offline.
+plus fonts installed by `fnt` (next section). Unlike the base and the C4 includes,
+that font step **fetches from the network at build time and is not version-pinned**
+— a deliberate trade-off for list-driven font management.
 
-## Fonts (`../renderer/fonts/`)
+## Fonts (`../renderer/fonts.list`)
 
-Diagrams render in **Roboto** (Apache-2.0, © Google; license in
-`../renderer/fonts/LICENSE-Roboto.txt`). Fonts work in two places, so we vendor
-two formats:
+Diagrams render in **Roboto**. Rather than commit font binaries, the renderer
+image installs fonts with [`fnt`](https://github.com/alexmyczko/fnt) ("apt for
+fonts") from the names listed in
+[`../renderer/fonts.list`](../renderer/fonts.list) — add a line to install more.
+The image build then does two things, because fonts matter in two places:
 
-- **`Roboto-Regular.ttf` / `Roboto-Bold.ttf`** — copied into the renderer image
-  so PlantUML *measures* text (box sizing) with Roboto. Without this it would
-  measure with a fallback (DejaVu Sans) while the SVG names Roboto — a
-  layout-vs-display mismatch.
-- **`roboto-latin-400-normal.woff2` / `-700-normal.woff2`** (latin subset) —
-  `scripts/render-diagrams.sh` embeds these into every SVG as an `@font-face`
-  (via `scripts/embed-svg-font.mjs`), so the diagram *displays* in Roboto in any
-  viewer without the reader having Roboto installed.
+1. **Measurement:** installs each listed font (TTF) so PlantUML sizes boxes with
+   Roboto. Without it, PlantUML measures with a DejaVu fallback while the SVG
+   names Roboto — a layout-vs-display mismatch.
+2. **Display:** subsets the primary font (Roboto) to a compact woff2 with
+   `pyftsubset`; `scripts/render-diagrams.sh` extracts that woff2 from the image
+   and embeds it into every SVG (via `scripts/embed-svg-font.mjs`), so diagrams
+   display in Roboto in any viewer without the reader having it installed.
 
-Diagram sources select it with `skinparam defaultFontName Roboto`. To change the
-typeface: replace these four files, update that skinparam in the `.puml` sources,
-and adjust the `font-family` in `scripts/embed-svg-font.mjs`.
+Diagram sources select it with `skinparam defaultFontName Roboto`.
+
+**Trade-off (no pinning):** `fnt` always fetches the *latest* font over the
+network at build time, so this renderer is intentionally **not** offline or
+reproducible-by-pin (Docker layer-caches the build between runs on one machine).
+To change the typeface: edit `fonts.list`, update `skinparam defaultFontName` in
+the `.puml` sources, and adjust the subset target in `renderer/Dockerfile`.
+Fonts carry their own upstream licenses (Roboto is Apache-2.0, © Google).
 
 ## C4-PlantUML (`c4/`)
 
