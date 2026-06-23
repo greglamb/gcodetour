@@ -35,6 +35,7 @@ import {
 import { registerCodeStatusModule } from "./codeStatus";
 import { registerPlayerCommands } from "./commands";
 import { registerDecorators } from "./decorator";
+import { registerDiagramModule } from "./diagram";
 import { registerFileSystemProvider } from "./fileSystem";
 import { registerTextDocumentContentProvider } from "./fileSystem/documentProvider";
 import {
@@ -438,6 +439,8 @@ export function registerPlayerModule(context: ExtensionContext) {
   registerCodeStatusModule();
 
   initializeStorage(context);
+
+  registerDiagramModule(context);
 
   // Watch for changes to the active tour property,
   // and automatically re-render the current step in response.

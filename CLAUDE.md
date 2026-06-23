@@ -70,6 +70,17 @@ Conventions:
 - `src/player/` — playback: comment-thread rendering, decorators, status bar, and the
   tree view. `generatePreviewContent` in `src/player/index.ts` renders step descriptions
   (markdown + basic HTML, command links, file/tour references, and `{{ENV_VAR}}` substitution).
+- `src/player/diagram/` — **synchronized diagram steps** (the only webview in the extension).
+  `index.ts` subscribes to `onDidStartTour`/`onDidEndTour` and drives a single reusable
+  `panel.ts` webview, reading the step's SVG via `workspace.fs` (works in node + web).
+  Pure, unit-tested logic lives in `model.ts`/`sentinel.ts`/`layout.ts`/`sanitizePolicy.ts`
+  (in `.c8rc.json`). The webview client is authored in TS (`client/main.ts`) and bundled
+  **separately** by `esbuild.diagram.mjs` → `media/diagram/client.js` (so it can `import` the
+  same pure policy modules) — it is NOT part of the webpack graph. `npm run build` runs
+  `build:diagram` before webpack; the bundled client ships in the `.vsix` because `media/` is
+  not in `.vscodeignore`. Diagrams render only during playback (`onDidStartTour` doesn't fire
+  in record/edit mode). The integration tier asserts panel state via the `codetour:diagramPanelOpen`
+  context key / a webview tab.
 - `src/recorder/` — recording/editing tours.
 - `src/liveShare/` — VS Live Share integration.
 - `src/notebook/` — experimental notebook view; uses the stable

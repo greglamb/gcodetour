@@ -141,6 +141,25 @@
             "items": {
               "type": "string"
             }
+          },
+          "diagram": {
+            "type": "object",
+            "description": "Associates the step with a diagram (an SVG rendered from PlantUML/C4) that is shown beside the editor and highlighted in sync with the tour. See https://github.com/greglamb/gcodetour for the authoring convention.",
+            "required": ["path"],
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Workspace-relative path to the SVG file to display for this step (e.g. .tours/diagrams/flow.svg)."
+              },
+              "element": {
+                "type": "string",
+                "description": "The alias of the diagram element to highlight. Matches the element tagged with a 'ct://el/<alias>' sentinel hyperlink in the diagram source. Omit to show the diagram with nothing highlighted."
+              },
+              "callout": {
+                "type": "string",
+                "description": "An optional short, one-line label pinned near the highlighted element."
+              }
+            }
           }
         }
       }

@@ -1,0 +1,39 @@
+{
+  "title": "Diagram Tour",
+  "description": "Fixture tour exercising synchronized diagram steps.",
+  "steps": [
+    {
+      "file": "sample.js",
+      "line": 1,
+      "description": "Step 1 — code + diagram, enrichQ highlighted.",
+      "diagram": {
+        "path": ".tours/diagrams/sample.svg",
+        "element": "enrichQ",
+        "callout": "Polls OrderCreated"
+      }
+    },
+    {
+      "file": "sample.js",
+      "line": 2,
+      "description": "Step 2 — no diagram (panel kept)."
+    },
+    {
+      "file": "sample.js",
+      "line": 3,
+      "description": "Step 3 — same diagram, orderApi highlighted.",
+      "diagram": {
+        "path": ".tours/diagrams/sample.svg",
+        "element": "orderApi",
+        "callout": "Accepts orders"
+      }
+    },
+    {
+      "file": "sample.js",
+      "line": 5,
+      "description": "Step 4 — malformed diagram (no path) is ignored.",
+      "diagram": {
+        "element": "nope"
+      }
+    }
+  ]
+}

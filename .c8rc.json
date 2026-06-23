@@ -2,7 +2,11 @@
   "include": [
     "out/player/preview.js",
     "out/tourLabels.js",
-    "out/conflict.js"
+    "out/conflict.js",
+    "out/player/diagram/model.js",
+    "out/player/diagram/sentinel.js",
+    "out/player/diagram/layout.js",
+    "out/player/diagram/sanitizePolicy.js"
   ],
   "reporter": ["text"],
   "check-coverage": true,

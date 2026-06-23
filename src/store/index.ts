@@ -34,6 +34,22 @@ export interface CodeTourStep {
 
   pattern?: string;
   markerTitle?: string;
+
+  // Associates the step with a diagram (an SVG rendered from PlantUML/C4) that
+  // is shown beside the editor and highlighted in sync with the tour. See
+  // src/player/diagram for the runtime behavior. Optional and additive — steps
+  // without it behave exactly as before.
+  diagram?: CodeTourStepDiagram;
+}
+
+export interface CodeTourStepDiagram {
+  // Workspace-relative path to the SVG to display for this step.
+  path: string;
+  // Alias of the diagram element to highlight (matches a `ct://el/<alias>`
+  // sentinel hyperlink in the diagram). Omit to show the diagram unhighlighted.
+  element?: string;
+  // Optional short, one-line label pinned near the highlighted element.
+  callout?: string;
 }
 
 export interface CodeTour {
