@@ -4,6 +4,10 @@
 - Automatically set the "pattern" record mode when you create a new tour, and select `None` for the git ref
 - Added support for opening a `*.tour` file in the VS Code notebook editor (Insiders only)
 
+## v0.2606.2303 (06/23/26)
+
+- Fixed a regression from v0.2606.2302 where starting a tour showed only the diagram (or nothing) and not the step's comment thread until you navigated forward and back. The Comments-panel suppression was awaited before the comment controller was created, so the first step rendered before the controller existed; the controller is now created synchronously and the suppression runs after it.
+
 ## v0.2606.2302 (06/23/26)
 
 - **Diagram panel** fixes from real-world use:

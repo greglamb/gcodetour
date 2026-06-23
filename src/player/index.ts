@@ -167,8 +167,11 @@ export async function startPlayer() {
     controller.dispose();
   }
 
-  await suppressCommentsPanel();
-
+  // Create the controller SYNCHRONOUSLY, before any `await`. startCodeTour() calls
+  // startPlayer() without awaiting it and then immediately sets store.activeTour,
+  // which fires the render reaction — so the controller must already exist or the
+  // first step's comment thread is silently skipped (it only appears once you
+  // navigate). Don't put an await ahead of this assignment.
   controller = comments.createCommentController(
     CONTROLLER_ID,
     CONTROLLER_LABEL
@@ -185,6 +188,11 @@ export async function startPlayer() {
       }
     }
   };
+
+  // Suppress the auto-opening Comments panel. The first thread is created a few
+  // async ticks later (renderCurrentStep awaits file resolution), so this write
+  // lands before it — and crucially it no longer blocks the controller above.
+  await suppressCommentsPanel();
 }
 
 export async function stopPlayer() {

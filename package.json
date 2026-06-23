@@ -3,7 +3,7 @@
   "displayName": "gCodeTour",
   "description": "VS Code extension that allows you to record and playback guided tours of codebases, directly within the editor",
   "publisher": "greglamb",
-  "version": "0.2606.2302",
+  "version": "0.2606.2303",
   "author": {
     "name": "Microsoft Corporation"
   },
