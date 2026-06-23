@@ -7,8 +7,8 @@ tour requires none of it** — only authoring/re-rendering does (see
 
 ## Renderer
 
-- **Image:** `yuzutech/kroki:0.29.1`
-- **Digest (authoritative):** `sha256:6d70ed44236102613e1155185340680644dded2191ff0be4f559fb31b92065d9`
+- **Image:** `yuzutech/kroki:0.31.0`
+- **Digest (authoritative):** `sha256:c16303ecd8ae840a6e3a76efa53468836c6297eeb7b7316845c3b24e8dbd0398`
 
 Kroki bundles PlantUML (and Graphviz), so C4 and activity/swim-lane diagrams all
 render from the one pinned image. The render script pins by digest; the tag is

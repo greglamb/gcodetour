@@ -36,8 +36,8 @@
 set -eu
 
 # --- Pinned renderer (digest is authoritative; tag is for humans) -------------
-KROKI_IMAGE="yuzutech/kroki@sha256:6d70ed44236102613e1155185340680644dded2191ff0be4f559fb31b92065d9"
-KROKI_IMAGE_TAG="yuzutech/kroki:0.29.1"
+KROKI_IMAGE="yuzutech/kroki@sha256:c16303ecd8ae840a6e3a76efa53468836c6297eeb7b7316845c3b24e8dbd0398"
+KROKI_IMAGE_TAG="yuzutech/kroki:0.31.0"
 KROKI_PORT="${KROKI_PORT:-8753}"
 
 # --- Arguments ----------------------------------------------------------------
