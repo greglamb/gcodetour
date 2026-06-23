@@ -117,7 +117,7 @@ async function handleStep(
     element: spec.element,
     callout: spec.callout
   });
-  panel.reveal(beside);
+  panel.reveal();
 }
 
 function handleEndTour(): void {

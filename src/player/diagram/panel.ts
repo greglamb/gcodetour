@@ -26,11 +26,23 @@ export class DiagramPanel {
     private readonly onDispose: () => void
   ) {
     const mediaRoot = Uri.joinPath(this.extensionUri, "media", "diagram");
+    // ViewColumn.Beside/Active with an empty workbench (a tour whose first step is
+    // a content/directory step opens no editor) produces no visible panel — the
+    // diagram then only appears after navigating to a step that opens an editor.
+    // Fall back to a concrete column when there's nothing to sit beside.
+    const hasOpenTab = window.tabGroups.all.some(
+      group => group.tabs.length > 0
+    );
+    const viewColumn = !hasOpenTab
+      ? ViewColumn.One
+      : beside
+        ? ViewColumn.Beside
+        : ViewColumn.Active;
     this.panel = window.createWebviewPanel(
       VIEW_TYPE,
       TITLE,
       {
-        viewColumn: beside ? ViewColumn.Beside : ViewColumn.Active,
+        viewColumn,
         preserveFocus: true
       },
       {
@@ -70,9 +82,9 @@ export class DiagramPanel {
     this.panel.webview.postMessage(message);
   }
 
-  /** Surfaces the panel without stealing focus from the editor. */
-  reveal(beside: boolean): void {
-    this.panel.reveal(beside ? ViewColumn.Beside : ViewColumn.Active, true);
+  /** Surfaces the panel in its existing column, without stealing editor focus. */
+  reveal(): void {
+    this.panel.reveal(undefined, true);
   }
 
   dispose(): void {

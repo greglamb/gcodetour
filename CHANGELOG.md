@@ -4,6 +4,10 @@
 - Automatically set the "pattern" record mode when you create a new tour, and select `None` for the git ref
 - Added support for opening a `*.tour` file in the VS Code notebook editor (Insiders only)
 
+## v0.2606.2305 (06/23/26)
+
+- Fixed the diagram panel not opening when a tour's **first step is a content step** (or any step that opens no editor) and the window had no editors open. `createWebviewPanel(ViewColumn.Beside)` on an empty workbench produces no visible panel, so the diagram only appeared after navigating to a step that opened an editor. The panel now falls back to a concrete column when there's nothing to sit beside. Added an integration regression test (content first step, no editors open).
+
 ## v0.2606.2304 (06/23/26)
 
 - **Diagram panel**: sentinel-link labels now render as plain node text — the inert hyperlink underline is removed and the label is no longer recolored (the previous recolor could tint labels to an unreadable low-contrast color on solid-fill themes).

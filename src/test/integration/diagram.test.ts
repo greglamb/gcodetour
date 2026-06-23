@@ -3,7 +3,13 @@
 
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { CodeTourApi, getApi, startSampleTour, waitFor } from "./helpers";
+import {
+  activateExtension,
+  CodeTourApi,
+  getApi,
+  startSampleTour,
+  waitFor
+} from "./helpers";
 
 // The diagram webview surfaces as a tab whose input is a webview for our view
 // type. (Webviews aren't enumerable like text editors, but tabs are.)
@@ -95,5 +101,35 @@ describe("Synchronized diagrams", () => {
     await api.endCurrentTour();
     await waitFor(() => diagramTabs().length === 0);
     assert.equal(diagramTabs().length, 0, "panel disposed on tour end");
+  });
+
+  it("opens the diagram when the first step is a content step (no file anchor)", async () => {
+    // Regression: starting a tour whose first step is a content step (renders no
+    // editor) must still open the diagram panel — not only after navigating.
+    // Reproduce the real scenario: a window with NO editors open, so there is no
+    // group for the panel to anchor "beside".
+    await vscode.commands.executeCommand("workbench.action.closeAllEditors");
+    await waitFor(() =>
+      vscode.window.tabGroups.all.every(g => g.tabs.length === 0)
+    );
+    await activateExtension();
+    await waitFor(async () => {
+      const started = nextStep(api);
+      await vscode.commands.executeCommand(
+        "codetour.startTourByTitle",
+        "Content First Diagram Tour"
+      );
+      return Promise.race([
+        started.then(() => true),
+        new Promise<boolean>(r => setTimeout(() => r(false), 500))
+      ]);
+    });
+
+    await waitFor(() => diagramTabs().length === 1);
+    assert.equal(
+      diagramTabs().length,
+      1,
+      "diagram panel should open on a content first step"
+    );
   });
 });

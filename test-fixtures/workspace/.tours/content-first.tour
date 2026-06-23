@@ -1,0 +1,24 @@
+{
+  "title": "Content First Diagram Tour",
+  "description": "Fixture: the first step is a content step (no file anchor) that carries a diagram.",
+  "steps": [
+    {
+      "title": "Welcome",
+      "description": "Overview — the diagram should be visible on this content step.",
+      "diagram": {
+        "path": ".tours/diagrams/sample.svg",
+        "element": "enrichQ",
+        "callout": "Polls OrderCreated"
+      }
+    },
+    {
+      "file": "sample.js",
+      "line": 1,
+      "description": "A real file step.",
+      "diagram": {
+        "path": ".tours/diagrams/sample.svg",
+        "element": "orderApi"
+      }
+    }
+  ]
+}
