@@ -65,6 +65,8 @@ PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, o
 - **C4 diagrams** already bake a white background automatically — nothing to do.
 - **Activity / swim-lane diagrams** are transparent by default, so add `skinparam backgroundColor <color>` right after the `!theme` line — `#FFFFFF` for the default `materia-outline` (or any light theme); a dark color (e.g. `#1B1B1B`) only if you switched to a dark theme. Use `skinparam backgroundColor`, not a hand-drawn full-canvas rectangle — you don't know the canvas size ahead of time, and the skinparam is the idiomatic one-liner.
 
+**Fonts.** Diagrams use **Roboto** — add `skinparam defaultFontName Roboto` (after the `!theme`/`!include`). The render pipeline vendors Roboto into the renderer image (so PlantUML *measures* boxes with it) and embeds it into every SVG (so it *displays* in Roboto in any viewer, even if the reader doesn't have it). Don't name a font that isn't vendored into the renderer (see `.tours/diagrams/vendor/README.md`), or measurement and display will disagree.
+
 ### Choosing a diagram type
 
 - **System Context / Container** → "where does this fit" overview steps, usually near the start.

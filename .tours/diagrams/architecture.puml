@@ -7,6 +7,7 @@
 ' Render with: scripts/render-diagrams.sh
 !$RELATIVE_INCLUDE = "."
 !include C4_Container.puml
+skinparam defaultFontName Roboto
 
 LAYOUT_WITH_LEGEND()
 
