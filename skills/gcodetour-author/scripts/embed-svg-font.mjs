@@ -3,7 +3,8 @@
 // the reader having Roboto installed. The diagrams reference `font-family:Roboto`
 // (via `skinparam defaultFontName Roboto`); this supplies the glyphs.
 //
-// Usage: node scripts/embed-svg-font.mjs <svg> <regular.woff2> <bold.woff2>
+// Usage: node embed-svg-font.mjs <svg> <regular.woff2> <bold.woff2>
+// (invoked by render-diagrams.sh next to it; not run directly)
 // Idempotent: re-running on an already-embedded SVG is a no-op.
 import { readFileSync, writeFileSync } from "node:fs";
 

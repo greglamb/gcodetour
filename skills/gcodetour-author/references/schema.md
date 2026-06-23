@@ -83,14 +83,15 @@ PlantUML emits no stable per-element IDs, but it wraps any element given a **hyp
 
 - **C4-PlantUML elements** — pass the `$link` parameter:
   `Container(api, "Order API", "C#", "Accepts orders", $link="ct://el/orderApi")`
-- **Activity / swim-lane nodes** — append the link form:
-  `:Validate order [[ct://el/validate]];`
+- **Activity / swim-lane nodes** — use the **label-only** link form, so the node label is itself the anchor:
+  `:[[ct://el/validate Validate order]];`
+  Do **not** write `:Validate order [[ct://el/validate]];` — the trailing form renders the raw `ct://el/validate` URL as visible underlined text in the box. Also declare the first `|Lane|` *before* `start`, or PlantUML errors with `This swimlane must be defined at the start of the diagram`.
 
 Aliases must be stable, human-meaningful, and **exactly equal** the `diagram.element` values written into the tour. Re-rendering must keep aliases stable — never key them off layout or order.
 
 ### Rendering (authoring time only)
 
-Diagram sources live in `.tours/diagrams/*.puml` and render to sibling `*.svg` via [`scripts/render-diagrams.sh`](../../../scripts/render-diagrams.sh) (a digest-pinned Kroki Docker image; C4 includes vendored under `.tours/diagrams/vendor/c4`). Commit the rendered `.svg` files — **playback never runs the renderer**, it just loads the committed SVG. C4 sources start with `!$RELATIVE_INCLUDE = "."` then `!include C4_Container.puml` (etc.) so the vendored includes resolve offline. Activity/swim-lane diagrams default to `!theme materia-outline`; the SKILL's [Theming](../SKILL.md#theming) section lists the bundled themes and notes that theme colors are baked into the SVG (they don't adapt to the reader's light/dark editor).
+Diagram sources live in `.tours/diagrams/*.puml` and render to sibling `*.svg` via the skill's bundled [`scripts/render-diagrams.sh`](../scripts/render-diagrams.sh) (a digest-pinned Kroki Docker image, fonts via `fnt`). Commit the rendered `.svg` files — **playback never runs the renderer**, it just loads the committed SVG. C4 sources start with `!include <C4/C4_Container>` (etc.); C4-PlantUML ships in the renderer's bundled PlantUML stdlib, so this resolves offline with nothing vendored. Activity/swim-lane diagrams default to `!theme materia-outline` and declare the first `|Lane|` before `start`; the SKILL's [Theming](../SKILL.md#theming) section lists the bundled themes and notes that theme colors are baked into the SVG (they don't adapt to the reader's light/dark editor).
 
 ## Step anchoring rules
 

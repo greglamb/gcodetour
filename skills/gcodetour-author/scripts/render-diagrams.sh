@@ -3,24 +3,30 @@
 # render-diagrams.sh — render PlantUML/C4 diagram sources to addressable SVGs.
 #
 # Converts every `*.puml` in a diagram directory to a sibling `*.svg` using a
-# Kroki renderer image (built from `<diagram-dir>/renderer`) that installs fonts
-# with `fnt` (apt for fonts) from `renderer/fonts.list` and subsets the primary
-# font (Roboto) to a compact woff2. The vendored C4-PlantUML includes are mounted
-# in, so include resolution is offline. After each render the Roboto woff2 is
-# embedded into the SVG (as @font-face) so the diagram displays in Roboto in any
-# viewer, whether or not the reader has it installed.
+# Kroki renderer image (built from the `renderer/` dir next to this script) that
+# installs fonts with `fnt` (apt for fonts) from `renderer/fonts.list` and
+# subsets the primary font (Roboto) to a compact woff2. C4-PlantUML is the
+# stdlib bundled inside the Kroki/PlantUML image (`!include <C4/...>`), so no C4
+# files are vendored and nothing is fetched from the network at render time.
+# After each render the Roboto woff2 is embedded into the SVG (as @font-face) so
+# the diagram displays in Roboto in any viewer, whether or not the reader has it.
+#
+# This script is self-contained: it finds `renderer/` and `embed-svg-font.mjs`
+# relative to its own location, so it works whether it lives in this repo or is
+# installed into another project via the gcodetour-author skill. It only needs a
+# target diagram directory (default `.tours/diagrams`, resolved from the CWD).
 #
 # NOTE: `fnt` fetches the latest fonts from the network at *image build* time and
 # cannot pin a version — so the renderer is intentionally NOT offline/
-# reproducible-by-pin (unlike the digest-pinned base and vendored C4). See
-# `.tours/diagrams/vendor/README.md`.
+# reproducible-by-pin (unlike the digest-pinned base). See renderer/README.md.
 #
 # These SVGs are what gCodeTour's synchronized-diagram steps display: each element
 # tagged in the source with a `ct://el/<alias>` hyperlink is wrapped by PlantUML
 # in an `<a href="ct://el/<alias>">`, which the player resolves to highlight it.
 #
 # Usage:
-#   scripts/render-diagrams.sh [diagram-dir]      # default .tours/diagrams
+#   skills/gcodetour-author/scripts/render-diagrams.sh [diagram-dir]
+#                                                 # diagram-dir default .tours/diagrams
 # Environment:
 #   KROKI_PORT    Host port to publish the renderer on (default 8753).
 #
@@ -33,10 +39,12 @@ set -eu
 RENDERER_TAG="gcodetour-kroki:fnt"
 KROKI_PORT="${KROKI_PORT:-8753}"
 
+# Resolve paths relative to this script so it runs from any CWD / install location.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+RENDERER_DIR="$SCRIPT_DIR/renderer"
+EMBED_SCRIPT="$SCRIPT_DIR/embed-svg-font.mjs"
+
 DIAGRAM_DIR="${1:-.tours/diagrams}"
-VENDOR_DIR="$DIAGRAM_DIR/vendor/c4"
-RENDERER_DIR="$DIAGRAM_DIR/renderer"
-EMBED_SCRIPT="scripts/embed-svg-font.mjs"
 # The embed woff2 are produced inside the image (no font files are committed) and
 # extracted to this temp dir at run time.
 WEBFONT_DIR=""
@@ -49,18 +57,18 @@ for tool in docker curl node; do
     exit 1
   fi
 done
-for dir in "$DIAGRAM_DIR" "$VENDOR_DIR" "$RENDERER_DIR"; do
-  if [ ! -d "$dir" ]; then
-    echo "error: directory not found: $dir" >&2
-    exit 1
-  fi
-done
+if [ ! -d "$DIAGRAM_DIR" ]; then
+  echo "error: diagram directory not found: $DIAGRAM_DIR" >&2
+  exit 1
+fi
+if [ ! -d "$RENDERER_DIR" ]; then
+  echo "error: renderer directory not found: $RENDERER_DIR" >&2
+  exit 1
+fi
 if [ ! -f "$EMBED_SCRIPT" ]; then
   echo "error: required file not found: $EMBED_SCRIPT" >&2
   exit 1
 fi
-
-ABS_VENDOR_DIR="$(cd "$VENDOR_DIR" && pwd)"
 
 cleanup() {
   if [ -n "$CONTAINER_ID" ]; then
@@ -88,14 +96,12 @@ docker run --rm --entrypoint cat "$RENDERER_TAG" \
   /usr/local/share/gcodetour-webfonts/roboto-700.woff2 >"$FONT_BOLD"
 
 # --- Start the renderer -------------------------------------------------------
-# unsafe mode is required so PlantUML may resolve our local (vendored) includes;
-# our sources never reference remote URLs, so nothing is fetched at render time.
+# unsafe mode lets PlantUML resolve the bundled C4 stdlib includes/themes; our
+# sources never reference remote URLs, so nothing is fetched at render time.
 echo "Starting renderer on port $KROKI_PORT ..."
 CONTAINER_ID="$(docker run -d --rm \
   -p "$KROKI_PORT:8000" \
   -e KROKI_SAFE_MODE=unsafe \
-  -e KROKI_PLANTUML_INCLUDE_PATH=/data \
-  -v "$ABS_VENDOR_DIR:/data:ro" \
   "$RENDERER_TAG")"
 
 # --- Wait for health ----------------------------------------------------------

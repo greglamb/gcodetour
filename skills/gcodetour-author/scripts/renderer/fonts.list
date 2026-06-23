@@ -6,6 +6,6 @@
 #
 # Note: `fnt` always fetches the latest font from the network at build time — it
 # does not pin versions, so this renderer is intentionally NOT a reproducible,
-# offline, digest-pinned build (unlike the rest of the toolchain). See
-# vendor/README.md.
+# offline, digest-pinned build (unlike the digest-pinned base image). See
+# README.md.
 fonts-roboto-unhinted

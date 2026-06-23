@@ -1,25 +1,25 @@
 @startuml
-' Activity swim lane (no Graphviz, no C4 include) of the developer's journey.
-' Nodes are tagged with [[ct://el/<alias>]]. Render: scripts/render-diagrams.sh
+' Developer-journey activity swim lane. Lane declared before start; nodes use the
+' label-only link form (see schema.md). Render: skills/gcodetour-author/scripts/render-diagrams.sh
 !theme materia-outline
 ' Opaque background so the diagram reads on any VS Code editor theme (the panel
 ' background follows the reader's theme; C4 diagrams bake this automatically).
 skinparam backgroundColor #FFFFFF
-' Roboto is vendored into the renderer image and embedded into the SVG.
+' Roboto is installed into the renderer image and embedded into the SVG.
 skinparam defaultFontName Roboto
 
 title gCodeTour — developer journey
 
 |Developer|
 start
-:Open a workspace with tours [[ct://el/open]];
-:Start a tour [[ct://el/start]];
+:[[ct://el/open Open a workspace with tours]];
+:[[ct://el/start Start a tour]];
 |Extension|
-:Discover .tour files [[ct://el/discover]];
-:Render step in a comment thread [[ct://el/render]];
-:Show synchronized diagram [[ct://el/diagramstep]];
+:[[ct://el/discover Discover .tour files]];
+:[[ct://el/render Render step in a comment thread]];
+:[[ct://el/diagramstep Show synchronized diagram]];
 |Developer|
-:Navigate next / previous [[ct://el/navigate]];
+:[[ct://el/navigate Navigate next / previous]];
 stop
 
 @enduml

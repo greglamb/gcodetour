@@ -6,9 +6,12 @@
 # fonts.list with `fnt`, then subset the primary font (Roboto) to a small woff2
 # that the render script embeds into each SVG for display.
 #
+# C4-PlantUML ships in the base image's PlantUML stdlib, so sources use
+# `!include <C4/...>` — nothing is vendored or fetched at render time.
+#
 # NOTE: `fnt` fetches the latest fonts from the network at build time and cannot
 # pin a version, so this image is intentionally NOT offline/reproducible-by-pin
-# (unlike the digest-pinned base and the vendored C4 includes). See vendor/README.md.
+# (unlike the digest-pinned base). See README.md.
 FROM yuzutech/kroki@sha256:c16303ecd8ae840a6e3a76efa53468836c6297eeb7b7316845c3b24e8dbd0398
 
 USER root

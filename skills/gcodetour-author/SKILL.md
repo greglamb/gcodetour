@@ -42,7 +42,7 @@ A tour can pair steps with **synchronized diagrams** so the reader sees the code
 
 ### Toolchain (fixed)
 
-PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, or GUI tools. Architecture views use C4 (`C4_Context`/`C4_Container`/`C4_Component`/`C4_Deployment`/`C4_Dynamic`); cross-actor user flows use **PlantUML activity swim lanes** (the `|Lane|` form, which needs no Graphviz). Everything renders to SVG via the vendored, pinned toolchain — never add a new dependency.
+PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, or GUI tools. Architecture views use C4 (`C4_Context`/`C4_Container`/`C4_Component`/`C4_Deployment`/`C4_Dynamic`); cross-actor user flows use **PlantUML activity swim lanes** (the `|Lane|` form, which needs no Graphviz). Everything renders to SVG via the skill's bundled, pinned toolchain (a digest-pinned Kroki image with C4-PlantUML in its stdlib; fonts installed by `fnt`) — never add a new dependency.
 
 ### Theming
 
@@ -65,7 +65,7 @@ PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, o
 - **C4 diagrams** already bake a white background automatically — nothing to do.
 - **Activity / swim-lane diagrams** are transparent by default, so add `skinparam backgroundColor <color>` right after the `!theme` line — `#FFFFFF` for the default `materia-outline` (or any light theme); a dark color (e.g. `#1B1B1B`) only if you switched to a dark theme. Use `skinparam backgroundColor`, not a hand-drawn full-canvas rectangle — you don't know the canvas size ahead of time, and the skinparam is the idiomatic one-liner.
 
-**Fonts.** Diagrams use **Roboto** — add `skinparam defaultFontName Roboto` (after the `!theme`/`!include`). The render pipeline installs Roboto into the renderer image via `fnt` (so PlantUML *measures* boxes with it) and embeds a subset into every SVG (so it *displays* in Roboto in any viewer, even if the reader doesn't have it). To use a different font, add it to `.tours/diagrams/renderer/fonts.list` first (see `.tours/diagrams/vendor/README.md`) — naming a font the renderer doesn't install makes measurement and display disagree.
+**Fonts.** Diagrams use **Roboto** — add `skinparam defaultFontName Roboto` (after the `!theme`/`!include`). The render pipeline installs Roboto into the renderer image via `fnt` (so PlantUML *measures* boxes with it) and embeds a subset into every SVG (so it *displays* in Roboto in any viewer, even if the reader doesn't have it). To use a different font, add it to `scripts/renderer/fonts.list` first (see `scripts/renderer/README.md`) — naming a font the renderer doesn't install makes measurement and display disagree. Name Roboto **only** when you render with this bundled pipeline; if you skip the renderer, drop the `skinparam` so measurement and display agree on the default font.
 
 ### Choosing a diagram type
 
@@ -79,14 +79,32 @@ PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, o
 
 PlantUML has no stable element IDs, so tag every element a step will target with a sentinel hyperlink — PlantUML wraps linked elements in an `<a href="ct://el/<alias>">`, which the player resolves.
 
-- C4 elements: pass `$link` — `Container(api, "Order API", "C#", "Accepts orders", $link="ct://el/orderApi")`.
-- Activity nodes: append the link — `:Validate order [[ct://el/validate]];`.
+- **C4 elements:** pass `$link` — `Container(api, "Order API", "C#", "Accepts orders", $link="ct://el/orderApi")`. The whole element becomes the anchor and nothing extra is drawn.
+- **Activity / swim-lane nodes:** make the node label *itself* the link with the **label-only** form — `:[[ct://el/validate Validate order]];` (the alias, a space, then the visible text). **Do not** use the trailing form `:Validate order [[ct://el/validate]];` — PlantUML renders the raw `ct://el/validate` URL as visible underlined text inside the box.
 - Aliases are stable, human-meaningful, and must **exactly equal** the `diagram.element` values in the tour. Don't key them off layout or order, so re-rendering keeps them valid.
+
+**Swim-lane skeleton.** The first `|Lane|` must appear *before* `start`, or PlantUML errors with `This swimlane must be defined at the start of the diagram`:
+
+```
+@startuml
+!theme materia-outline
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Roboto
+|Developer|
+start
+:[[ct://el/open Open a workspace]];
+|Extension|
+:[[ct://el/discover Discover .tour files]];
+stop
+@enduml
+```
+
+Keep `'` comments in activity sources short and free of `[[…]]`/`<…>` link samples — a long comment block containing that syntax can break PlantUML's activity parser. Put the explanation in prose, not in the `.puml`.
 
 ### Render → reference loop
 
-1. Write sources to `.tours/diagrams/*.puml`. C4 files start with `!$RELATIVE_INCLUDE = "."` then `!include C4_Container.puml` (etc.) so the vendored includes under `.tours/diagrams/vendor/c4` resolve offline; activity/swim-lane files start with `!theme materia-outline` (see [Theming](#theming)).
-2. Render with `scripts/render-diagrams.sh` (digest-pinned Kroki Docker image → sibling `*.svg`). Requires Docker; **playback does not**. Commit the `.svg` files so tours play without the renderer.
+1. Write sources to `.tours/diagrams/*.puml`. C4 files start with `!include <C4/C4_Container>` (or `<C4/C4_Dynamic>`, etc.) — C4-PlantUML ships in the renderer's bundled PlantUML stdlib, so this resolves offline with nothing vendored. Activity/swim-lane files start with `!theme materia-outline` (see [Theming](#theming)) and declare the first `|Lane|` before `start`.
+2. Render with the skill's bundled `scripts/render-diagrams.sh [diagram-dir]` (default `.tours/diagrams`). It builds a digest-pinned Kroki image (installing the fonts in `scripts/renderer/fonts.list`) and writes a sibling `*.svg` per source. Requires Docker, curl, and node; **playback requires none of them**. Commit the `.svg` files so tours play without the renderer.
 3. Reference each rendered SVG from steps via `diagram: { path, element, callout }`.
 
 ### Interleaving with code
@@ -106,7 +124,7 @@ Before presenting a tour, confirm it holds up. The bundled script does all the m
 python3 scripts/verify_tour.py <path-to.tour> <repo-root>
 ```
 
-It validates against the bundled fork schema (draft-04), asserts every `file`+`pattern` step resolves to **exactly one** line, checks `directory` steps exist, rejects any step that sets `markerTitle`, and — for every `diagram` step — confirms the referenced SVG exists and contains an `<a href="ct://el/<element>">` for the step's `element`. It exits non-zero on failure, so it also drops straight into CI or a pre-commit hook. It needs no dependencies; `jsonschema`, if installed, adds full schema validation on top of the structural checks.
+It validates against the bundled fork schema (draft-04), asserts every `file`+`pattern` step resolves to **exactly one** line, checks `directory` steps exist, rejects any step that sets `markerTitle`, and — for every `diagram` step — confirms the referenced SVG exists and contains an `<a href="ct://el/<element>">` for the step's `element`. It exits non-zero on failure, so it also drops straight into CI or a pre-commit hook. It needs no dependencies; `jsonschema`, if installed, adds full schema validation on top of the structural checks. (System Python is often PEP-668 "externally managed", so `pip install jsonschema` may be refused — install it in a virtualenv, or just rely on the dependency-free structural checks.)
 
 - **Run the verifier** and fix anything it flags. A `pattern` matching zero or many lines is a broken step — never ship one. A `diagram.element` with no matching `ct://el/` anchor in the SVG is equally broken — re-tag the source and re-render.
 - **Set `$schema`** to `https://raw.githubusercontent.com/greglamb/gcodetour/main/schema.json` so the user's editor flags problems too.

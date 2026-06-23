@@ -4,9 +4,8 @@
 ' PlantUML wraps in an <a href="ct://el/<alias>"> in the rendered SVG. A tour
 ' step's `diagram.element` then matches that alias to highlight the element.
 '
-' Render with: scripts/render-diagrams.sh
-!$RELATIVE_INCLUDE = "."
-!include C4_Container.puml
+' Render with: skills/gcodetour-author/scripts/render-diagrams.sh
+!include <C4/C4_Container>
 skinparam defaultFontName Roboto
 
 LAYOUT_WITH_LEGEND()
