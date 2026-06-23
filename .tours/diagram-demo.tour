@@ -1,0 +1,67 @@
+{
+  "$schema": "https://raw.githubusercontent.com/greglamb/gcodetour/main/schema.json",
+  "title": "Synchronized Diagrams Demo",
+  "description": "Walks gCodeTour's own playback architecture, pairing code steps with synchronized C4 and swim-lane diagrams.",
+  "steps": [
+    {
+      "description": "### 🗺️ Overview\n\nThis tour pairs code with **synchronized diagrams**. As you advance, the diagram beside the editor highlights the relevant element. We start with the architecture of gCodeTour's own playback path.",
+      "diagram": {
+        "path": ".tours/diagrams/gcodetour-arch.svg"
+      }
+    },
+    {
+      "file": "src/store/provider.ts",
+      "pattern": "export async function discoverTours\\(",
+      "description": "### 📂 Discovery\n\nThe **Tour Provider** scans the workspace for `*.tour` files and populates the store. It's the entry point of the whole playback path.",
+      "diagram": {
+        "path": ".tours/diagrams/gcodetour-arch.svg",
+        "element": "provider",
+        "callout": "Discovers & watches .tour files"
+      }
+    },
+    {
+      "file": "src/store/actions.ts",
+      "pattern": "export function startCodeTour\\(",
+      "description": "### ▶️ Starting a tour\n\n`startCodeTour` sets the active tour on the MobX **store** — step 1 of the flow. Everything downstream reacts to that state change.",
+      "diagram": {
+        "path": ".tours/diagrams/gcodetour-flow.svg",
+        "element": "store",
+        "callout": "1 — startCodeTour updates the store"
+      }
+    },
+    {
+      "file": "src/player/index.ts",
+      "pattern": "async function renderCurrentStep\\(",
+      "description": "### 🎬 Rendering a step\n\nA MobX reaction on the active tour calls `renderCurrentStep`, which builds the comment thread for the current step — step 2 of the flow.",
+      "diagram": {
+        "path": ".tours/diagrams/gcodetour-flow.svg",
+        "element": "player",
+        "callout": "2 — reaction → renderCurrentStep"
+      }
+    },
+    {
+      "file": "src/store/actions.ts",
+      "pattern": "const _onDidStartTour =",
+      "description": "### 🔗 Driving the diagram\n\nThe same navigation fires `onDidStartTour`. The **Diagram Panel** subscribes to it and moves its highlight in lockstep — step 3, and exactly what's happening in this tour right now.",
+      "diagram": {
+        "path": ".tours/diagrams/gcodetour-flow.svg",
+        "element": "diagram",
+        "callout": "3 — onDidStartTour → highlight"
+      }
+    },
+    {
+      "description": "### 🏊 The developer's journey\n\nZooming out to the cross-actor flow: the reader opens a workspace, starts a tour, and the extension discovers, renders, and shows synchronized diagrams as they navigate.",
+      "diagram": {
+        "path": ".tours/diagrams/gcodetour-journey.svg",
+        "element": "diagramstep",
+        "callout": "You are here"
+      }
+    },
+    {
+      "description": "### ✅ Recap\n\nThat's the playback path end to end — discovery → store → player, with `onDidStartTour` driving a synchronized diagram. Diagrams are optional and additive; tours without them play exactly as before.",
+      "diagram": {
+        "path": ".tours/diagrams/gcodetour-arch.svg"
+      }
+    }
+  ]
+}

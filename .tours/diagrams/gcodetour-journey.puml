@@ -1,0 +1,19 @@
+@startuml
+' Activity swim lane (no Graphviz, no C4 include) of the developer's journey.
+' Nodes are tagged with [[ct://el/<alias>]]. Render: scripts/render-diagrams.sh
+
+title gCodeTour — developer journey
+
+|Developer|
+start
+:Open a workspace with tours [[ct://el/open]];
+:Start a tour [[ct://el/start]];
+|Extension|
+:Discover .tour files [[ct://el/discover]];
+:Render step in a comment thread [[ct://el/render]];
+:Show synchronized diagram [[ct://el/diagramstep]];
+|Developer|
+:Navigate next / previous [[ct://el/navigate]];
+stop
+
+@enduml

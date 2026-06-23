@@ -1,0 +1,20 @@
+@startuml
+' C4 Dynamic view: how starting/navigating a tour drives the player and the
+' diagram panel. Render: scripts/render-diagrams.sh
+!$RELATIVE_INCLUDE = "."
+!include C4_Dynamic.puml
+
+LAYOUT_WITH_LEGEND()
+
+title gCodeTour — starting and navigating a tour
+
+Person(dev, "Developer", $link="ct://el/dev")
+Container(store, "MobX Store", "TypeScript", $link="ct://el/store")
+Container(player, "Player", "TypeScript", $link="ct://el/player")
+Container(diagram, "Diagram Panel", "TypeScript", $link="ct://el/diagram")
+
+Rel(dev, store, "1", "startCodeTour / nextTourStep")
+Rel(store, player, "2", "MobX reaction -> renderCurrentStep")
+Rel(store, diagram, "3", "onDidStartTour -> highlight element")
+
+@enduml
