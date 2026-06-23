@@ -1,0 +1,28 @@
+@startuml
+' Sample C4 Container diagram demonstrating the gCodeTour sentinel convention.
+' Each addressable element carries a `ct://el/<alias>` hyperlink via $link, which
+' PlantUML wraps in an <a href="ct://el/<alias>"> in the rendered SVG. A tour
+' step's `diagram.element` then matches that alias to highlight the element.
+'
+' Render with: scripts/render-diagrams.sh
+!$RELATIVE_INCLUDE = "."
+!include C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title gCodeTour — example order system
+
+Person(customer, "Customer", "Places orders", $link="ct://el/customer")
+System_Boundary(sys, "Order System") {
+  Container(api, "Order API", "C#", "Accepts and validates orders", $link="ct://el/orderApi")
+  ContainerQueue(queue, "Order Queue", "Kafka", "Buffers OrderCreated events", $link="ct://el/enrichQ")
+  Container(worker, "Enrichment Worker", "C#", "Polls the queue and enriches orders", $link="ct://el/worker")
+  ContainerDb(db, "Order Store", "PostgreSQL", "Persists enriched orders", $link="ct://el/db")
+}
+
+Rel(customer, api, "Submits order", "HTTPS")
+Rel(api, queue, "Publishes OrderCreated")
+Rel(worker, queue, "Polls", "batches of 10")
+Rel(worker, db, "Writes enriched order")
+
+@enduml
