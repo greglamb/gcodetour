@@ -4,6 +4,10 @@
 - Automatically set the "pattern" record mode when you create a new tour, and select `None` for the git ref
 - Added support for opening a `*.tour` file in the VS Code notebook editor (Insiders only)
 
+## v0.2606.2205 (06/23/26)
+
+- No changes to the extension runtime. Diagram **authoring/tooling** improvements since the previous release: the diagram renderer is pinned to Kroki 0.31.0; the `gcodetour-author` skill now defaults activity/swim-lane diagrams to `materia-outline` (with an opaque background so they read on any editor theme) and C4 diagrams to `C4_blue_new`. Release pipeline now runs `verify` as a gate and pins each release tag to the exact built commit.
+
 ## v0.2606.2204 (06/23/26)
 
 - Diagram panel: the diagram is now framed as a "card" (themed border + subtle shadow) so it stays visually distinct from the editor background on any color theme.
