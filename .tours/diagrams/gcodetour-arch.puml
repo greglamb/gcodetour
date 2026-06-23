@@ -1,6 +1,8 @@
 @startuml
 ' C4 Container view of gCodeTour's playback architecture. Each addressable
 ' element carries a ct://el/<alias> sentinel via $link. Render: scripts/render-diagrams.sh
+' C4_blue_new pairs with the materia-outline activity default (blue, outlined, white bg).
+!theme C4_blue_new from <C4/themes>
 !$RELATIVE_INCLUDE = "."
 !include C4_Container.puml
 

@@ -1,6 +1,8 @@
 @startuml
 ' C4 Dynamic view: how starting/navigating a tour drives the player and the
 ' diagram panel. Render: scripts/render-diagrams.sh
+' C4_blue_new pairs with the materia-outline activity default (blue, outlined, white bg).
+!theme C4_blue_new from <C4/themes>
 !$RELATIVE_INCLUDE = "."
 !include C4_Dynamic.puml
 
