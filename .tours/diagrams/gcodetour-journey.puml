@@ -1,6 +1,7 @@
 @startuml
 ' Activity swim lane (no Graphviz, no C4 include) of the developer's journey.
 ' Nodes are tagged with [[ct://el/<alias>]]. Render: scripts/render-diagrams.sh
+!theme materia-outline
 
 title gCodeTour — developer journey
 

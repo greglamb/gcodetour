@@ -44,6 +44,16 @@ A tour can pair steps with **synchronized diagrams** so the reader sees the code
 
 PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, or GUI tools. Architecture views use C4 (`C4_Context`/`C4_Container`/`C4_Component`/`C4_Deployment`/`C4_Dynamic`); cross-actor user flows use **PlantUML activity swim lanes** (the `|Lane|` form, which needs no Graphviz). Everything renders to SVG via the vendored, pinned toolchain — never add a new dependency.
 
+### Theming
+
+**Activity / swim-lane diagrams:** default to `!theme materia-outline` (place it on the line right after `@startuml`). If the user asks for a different look — or names a theme — use that instead; it's their call, so honor any request. The themes below are bundled in the pinned renderer (PlantUML 1.2025.x via Kroki) and need no remote fetch:
+
+`plain` · `amiga` · `aws-orange` · `black-knight` · `bluegray` · `blueprint` · `carbon-gray` · `cerulean` · `cerulean-outline` · `cloudscape-design` · `crt-amber` · `crt-green` · `cyborg` · `cyborg-outline` · `hacker` · `lightgray` · `mars` · `materia` · `materia-outline` · `metal` · `mimeograph` · `minty` · `mono` · `reddress-darkblue` · `reddress-darkgreen` · `reddress-darkorange` · `reddress-darkred` · `reddress-lightblue` · `reddress-lightgreen` · `reddress-lightorange` · `reddress-lightred` · `sandstone` · `silver` · `sketchy` · `sketchy-outline` · `spacelab` · `spacelab-white` · `sunlust` · `superhero` · `superhero-outline` · `toy` · `united` · `vibrant` (and `_none_` to reset to the bare default).
+
+**C4 diagrams:** `!theme` only sets a base — C4 paints its own element colors, so the theme gallery barely shows. To restyle C4, use C4's own API (`UpdateElementStyle()`, element tags via `AddElementTag` + `$tags=`, `UpdateBoundaryStyle()`), not `!theme`.
+
+**Heads-up (why `materia-outline` is the default):** a theme's colors are baked into the SVG at render time and do **not** adapt to the reader's light/dark editor — only the gCodeTour highlight/callout chrome follows the VS Code theme. `materia-outline` is light with clean outlines, so it reads on both light and dark editors. Pick a dark theme (e.g. `superhero-outline`) only when you know the audience uses dark editors. Re-run `scripts/render-diagrams.sh` after changing a theme.
+
 ### Choosing a diagram type
 
 - **System Context / Container** → "where does this fit" overview steps, usually near the start.
@@ -62,7 +72,7 @@ PlantUML has no stable element IDs, so tag every element a step will target with
 
 ### Render → reference loop
 
-1. Write sources to `.tours/diagrams/*.puml`. C4 files start with `!$RELATIVE_INCLUDE = "."` then `!include C4_Container.puml` (etc.) so the vendored includes under `.tours/diagrams/vendor/c4` resolve offline.
+1. Write sources to `.tours/diagrams/*.puml`. C4 files start with `!$RELATIVE_INCLUDE = "."` then `!include C4_Container.puml` (etc.) so the vendored includes under `.tours/diagrams/vendor/c4` resolve offline; activity/swim-lane files start with `!theme materia-outline` (see [Theming](#theming)).
 2. Render with `scripts/render-diagrams.sh` (digest-pinned Kroki Docker image → sibling `*.svg`). Requires Docker; **playback does not**. Commit the `.svg` files so tours play without the renderer.
 3. Reference each rendered SVG from steps via `diagram: { path, element, callout }`.
 

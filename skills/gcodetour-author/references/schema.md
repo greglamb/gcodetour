@@ -90,7 +90,7 @@ Aliases must be stable, human-meaningful, and **exactly equal** the `diagram.ele
 
 ### Rendering (authoring time only)
 
-Diagram sources live in `.tours/diagrams/*.puml` and render to sibling `*.svg` via [`scripts/render-diagrams.sh`](../../../scripts/render-diagrams.sh) (a digest-pinned Kroki Docker image; C4 includes vendored under `.tours/diagrams/vendor/c4`). Commit the rendered `.svg` files — **playback never runs the renderer**, it just loads the committed SVG. C4 sources start with `!$RELATIVE_INCLUDE = "."` then `!include C4_Container.puml` (etc.) so the vendored includes resolve offline.
+Diagram sources live in `.tours/diagrams/*.puml` and render to sibling `*.svg` via [`scripts/render-diagrams.sh`](../../../scripts/render-diagrams.sh) (a digest-pinned Kroki Docker image; C4 includes vendored under `.tours/diagrams/vendor/c4`). Commit the rendered `.svg` files — **playback never runs the renderer**, it just loads the committed SVG. C4 sources start with `!$RELATIVE_INCLUDE = "."` then `!include C4_Container.puml` (etc.) so the vendored includes resolve offline. Activity/swim-lane diagrams default to `!theme materia-outline`; the SKILL's [Theming](../SKILL.md#theming) section lists the bundled themes and notes that theme colors are baked into the SVG (they don't adapt to the reader's light/dark editor).
 
 ## Step anchoring rules
 
