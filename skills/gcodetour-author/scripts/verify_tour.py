@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Verify a CodeTour .tour file: structure, anchor resolution, and forbidden fields.
+"""Verify CodeTour .tour file(s): structure, anchors, references, forbidden fields.
 
 Usage:
-    verify_tour.py <tour-file> [repo-root]
+    verify_tour.py <tour-file | tours-dir> [repo-root]
 
-repo-root defaults to the current directory. Exits non-zero if any check fails,
-so it can be wired into CI or a git pre-commit hook.
+Pass a single .tour file, or a directory (e.g. .tours/) to also validate
+cross-tour navigation. repo-root defaults to the current directory. Exits
+non-zero if any check fails, so it can be wired into CI or a git pre-commit hook.
 
 Checks (standard library only):
   - Required fields: tour.title, tour.steps; each step.description
@@ -16,6 +17,12 @@ Checks (standard library only):
   - Each `diagram` step: the SVG exists, carries no PlantUML warning/error baked
     into the image (e.g. a deprecation notice), and (if `element` is set) contains
     a matching `ct://el/<element>` hyperlink anchor
+  - `[#n]` step links resolve to a real step in the same tour
+  - Directory mode also checks cross-tour navigation: `nextTour` and `[Title#n]`
+    resolve to a real tour (and step). A bare `[Title]` is left alone — it is
+    indistinguishable from ordinary bracketed prose, so it is never flagged.
+  - Informational: SVG anchors that no step highlights (catches an intended-but-
+    mistyped `element` that happens to resolve to the wrong, similar anchor)
 
 If the `jsonschema` package and the bundled references/schema.json are both
 available, full JSON Schema (draft-04) validation runs too; otherwise it is
@@ -143,54 +150,187 @@ def check_diagram(index, step, repo_root):
     return False, f"step {index}: diagram element '{element}' -> NO ct://el/ anchor in {path}"
 
 
+def get_tour_title(title):
+    """Mirror src/tourLabels.ts getTourTitle: strip a leading 'N - ' prefix."""
+    if re.match(r"^#?\d+\s-", title):
+        return title.split("-")[1].strip()
+    return title
+
+
+# Mirrors TOUR_REFERENCE_PATTERN in src/player/index.ts. Matches step refs
+# ([#n], [label][#n]) and tour refs ([Title], [Title#n], [label][Title]); a
+# trailing "(" disqualifies the match (that is an ordinary markdown link).
+TOUR_REF = re.compile(
+    r"(?:\[(?P<linkTitle>[^\]]+)\])?"
+    r"\[(?=\s*[^\]\s])"
+    r"(?P<tourTitle>[^\]#]+)?"
+    r"(?:#(?P<stepNumber>\d+))?"
+    r"\](?!\()"
+)
+
+
+def check_references(label, tour, step_count, raw_titles, display_steps, cross_tour):
+    """Return [(ok, message), ...] for nextTour and in-description step/tour refs.
+
+    raw_titles: every tour's exact title (nextTour matches these).
+    display_steps: {getTourTitle(t): step_count} (tour refs match these).
+    cross_tour: only validate links that may point at *other* tours when True
+    (a whole .tours dir was given); a single file can't see its siblings.
+    """
+    out = []
+    if cross_tour:
+        nxt = tour.get("nextTour")
+        if isinstance(nxt, str) and nxt:
+            ok = nxt in raw_titles
+            out.append((ok, f"{label}: nextTour '{nxt}' -> "
+                            + ("resolved" if ok else "NO tour has this title")))
+    for i, step in enumerate(tour.get("steps") or [], 1):
+        desc = step.get("description")
+        if not isinstance(desc, str):
+            continue
+        for m in TOUR_REF.finditer(desc):
+            tt = m.group("tourTitle")
+            sn = m.group("stepNumber")
+            if not tt:  # step reference into the current tour
+                if sn:
+                    n = int(sn)
+                    ok = 1 <= n <= step_count
+                    out.append((ok, f"{label} step {i}: [#{n}] -> "
+                                    + ("in range" if ok else f"OUT OF RANGE (1..{step_count})")))
+            else:  # tour reference
+                tt = tt.strip()
+                if tt in display_steps:
+                    if sn:
+                        n = int(sn)
+                        ok = 1 <= n <= display_steps[tt]
+                        out.append((ok, f"{label} step {i}: [{tt}#{n}] -> "
+                                        + ("resolved" if ok else f"step OUT OF RANGE (1..{display_steps[tt]})")))
+                elif sn and cross_tour:
+                    # [Title#n] is unambiguously a tour ref; a bare [Title] that
+                    # doesn't resolve is left alone (it may be ordinary prose).
+                    out.append((False, f"{label} step {i}: [{tt}#{sn}] -> NO tour has this title"))
+    return out
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__)
         return 2
 
-    tour_path = Path(argv[1])
+    target = Path(argv[1])
     repo_root = Path(argv[2]) if len(argv) > 2 else Path.cwd()
+    cross_tour = target.is_dir()
 
-    try:
-        tour = json.loads(tour_path.read_text())
-    except (ValueError, OSError) as exc:
-        print(f"FAIL: cannot read/parse {tour_path}: {exc}")
+    tour_files = sorted(target.rglob("*.tour")) if cross_tour else [target]
+    if not tour_files:
+        print(f"FAIL: no .tour files found under {target}")
         return 1
 
+    # Load everything first so cross-tour references can resolve.
+    loaded = []  # (path, data)
     ok = True
-
-    if not isinstance(tour.get("title"), str) or not tour["title"]:
-        print("FAIL: tour.title missing or empty")
-        ok = False
-    steps = tour.get("steps")
-    if not isinstance(steps, list) or not steps:
-        print("FAIL: tour.steps missing or empty")
+    for tf in tour_files:
+        try:
+            loaded.append((tf, json.loads(tf.read_text())))
+        except (ValueError, OSError) as exc:
+            print(f"FAIL: cannot read/parse {tf}: {exc}")
+            ok = False
+    if not loaded:
         return 1
+
+    raw_titles = set()
+    display_steps = {}  # getTourTitle(title) -> step count
+    for _, data in loaded:
+        title = data.get("title")
+        steps = data.get("steps")
+        n = len(steps) if isinstance(steps, list) else 0
+        if isinstance(title, str) and title:
+            raw_titles.add(title)
+            display_steps.setdefault(get_tour_title(title), n)
 
     schema = load_schema()
-    if schema is None:
-        print("note: bundled references/schema.json not found — skipping schema validation")
-    else:
-        errors = schema_validate(tour, schema)
-        if errors is None:
-            print("note: jsonschema not installed — skipping schema validation (structural checks still run)")
-        elif errors:
+    schema_note_shown = False
+    referenced = {}  # svg abs path -> set of elements referenced by any step
+
+    for path, tour in loaded:
+        label = str(path.relative_to(target)) if cross_tour else path.name
+        if cross_tour:
+            print(f"== {label} ==")
+
+        if not isinstance(tour.get("title"), str) or not tour["title"]:
+            print("  FAIL tour.title missing or empty")
             ok = False
-            for err in errors:
-                print(f"FAIL schema: {list(err.path)} {err.message}")
+        steps = tour.get("steps")
+        if not isinstance(steps, list) or not steps:
+            print("  FAIL tour.steps missing or empty")
+            ok = False
+            continue
+
+        if schema is None:
+            if not schema_note_shown:
+                print("  note: bundled references/schema.json not found — skipping schema validation")
+                schema_note_shown = True
         else:
-            print("schema: PASS (draft-04)")
+            errors = schema_validate(tour, schema)
+            if errors is None:
+                if not schema_note_shown:
+                    print("  note: jsonschema not installed — skipping schema validation (structural checks still run)")
+                    print("        enable: python3 -m venv .venv && .venv/bin/pip install jsonschema; re-run with .venv/bin/python")
+                    schema_note_shown = True
+            elif errors:
+                ok = False
+                for err in errors:
+                    print(f"  FAIL schema: {list(err.path)} {err.message}")
+            else:
+                print("  schema: PASS (draft-04)")
 
-    for index, step in enumerate(steps, 1):
-        good, message = check_step(index, step, repo_root)
-        print(("  " if good else "  FAIL ") + message)
-        ok = ok and good
+        for index, step in enumerate(steps, 1):
+            good, message = check_step(index, step, repo_root)
+            print(("  " if good else "  FAIL ") + message)
+            ok = ok and good
 
-        diagram_result = check_diagram(index, step, repo_root)
-        if diagram_result is not None:
-            dgood, dmessage = diagram_result
-            print(("  " if dgood else "  FAIL ") + dmessage)
-            ok = ok and dgood
+            diagram_result = check_diagram(index, step, repo_root)
+            if diagram_result is not None:
+                dgood, dmessage = diagram_result
+                print(("  " if dgood else "  FAIL ") + dmessage)
+                ok = ok and dgood
+
+            diagram = step.get("diagram")
+            if isinstance(diagram, dict) and isinstance(diagram.get("path"), str):
+                svg = (Path(repo_root) / diagram["path"]).resolve()
+                used = referenced.setdefault(svg, set())
+                el = diagram.get("element")
+                if isinstance(el, str) and el:
+                    used.add(el)
+
+        ref_results = check_references(
+            label if cross_tour else "tour", tour, len(steps),
+            raw_titles, display_steps, cross_tour)
+        broken = [m for good, m in ref_results if not good]
+        for m in broken:
+            print("  FAIL " + m)
+        ok = ok and not broken
+        print(f"  references: {len(ref_results) - len(broken)} ok, {len(broken)} broken")
+
+    # Informational (#non-failing): SVG anchors no step highlights.
+    notes = []
+    for svg, used in sorted(referenced.items()):
+        try:
+            text = svg.read_text(errors="replace")
+        except OSError:
+            continue
+        present = set(re.findall(r'(?:xlink:)?href="ct://el/([^"]+)"', text))
+        unused = sorted(present - used)
+        if unused:
+            try:
+                shown = svg.relative_to(Path(repo_root).resolve())
+            except ValueError:
+                shown = svg
+            notes.append(f"note: {shown}: anchors defined but never highlighted by a step: {', '.join(unused)}")
+    if notes:
+        print("--- informational ---")
+        for n in notes:
+            print(n)
 
     print("=> ALL PASS" if ok else "=> FAILURES PRESENT")
     return 0 if ok else 1
