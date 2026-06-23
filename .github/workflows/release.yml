@@ -1,14 +1,21 @@
 name: Release
 
 # Manual only — trigger from the Actions tab → "Release" → "Run workflow".
-# It packages the extension and creates a GitHub Release (tagged with the
-# package.json version) with the .vsix attached. Bump the version first with
+# It verifies the project (format, lint, compile, unit tests, build), packages
+# the extension, and creates a GitHub Release (tagged with the package.json
+# version) with the .vsix attached. Bump the version first with
 # `npm run version:bump`, then commit/push, then run this.
 on:
   workflow_dispatch:
 
 permissions:
   contents: write
+
+# The Playwright UI tests and @vscode/test-electron integration tests need a
+# real VS Code instance / browser and are run locally only; `verify` covers the
+# fast unit tier plus a build smoke test, so skip the browser download here.
+env:
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
 
 jobs:
   release:
@@ -20,7 +27,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
+          cache: npm
       - run: npm install
+      - name: Verify (format, lint, compile, unit tests, build)
+        run: npm run verify
       - name: Package extension
         run: npm run package
       - name: Create GitHub release with the VSIX
