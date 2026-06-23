@@ -18,11 +18,14 @@ Checks (standard library only):
     into the image (e.g. a deprecation notice), and (if `element` is set) contains
     a matching `ct://el/<element>` hyperlink anchor
   - `[#n]` step links resolve to a real step in the same tour
+  - Inline `[label](./file)` links point at a real file; the `[label](Tour Title)`
+    antipattern (a file-link form aimed at a tour) is flagged with the fix
   - Directory mode also checks cross-tour navigation: `nextTour` and `[Title#n]`
     resolve to a real tour (and step). A bare `[Title]` is left alone — it is
     indistinguishable from ordinary bracketed prose, so it is never flagged.
   - Informational: SVG anchors that no step highlights (catches an intended-but-
-    mistyped `element` that happens to resolve to the wrong, similar anchor)
+    mistyped `element` that happens to resolve to the wrong, similar anchor);
+    inline links missing a `./` prefix; and unbalanced `**` (bold) in a step
 
 If the `jsonschema` package and the bundled references/schema.json are both
 available, full JSON Schema (draft-04) validation runs too; otherwise it is
@@ -233,6 +236,57 @@ def check_references(label, tour, step_count, raw_titles, display_steps, cross_t
     return out
 
 
+# Inline markdown links: [label](target) and image ![alt](target).
+INLINE_LINK = re.compile(r"(!?)\[[^\]]*\]\(([^)]+)\)")
+# Unescaped bold markers, for the unbalanced-** hazard check.
+BOLD = re.compile(r"(?<!\\)\*\*")
+
+
+def strip_code(text):
+    """Drop fenced blocks and inline code so example links/markup aren't scanned."""
+    text = re.sub(r"```.*?```", "", text, flags=re.S)
+    return re.sub(r"`[^`]*`", "", text)
+
+
+def check_links(label, tour, repo_root, raw_titles, display_steps):
+    """Validate inline [label](target) / ![alt](target) links in descriptions.
+
+    Mirrors the player (src/player/index.ts FILE_REFERENCE_PATTERN): only a target
+    starting with '.' is rewritten to open a workspace file; anything else renders
+    as raw markdown. Returns (failures, notes).
+    """
+    root = Path(repo_root).resolve()
+    failures = []
+    notes = []
+    for i, step in enumerate(tour.get("steps") or [], 1):
+        desc = step.get("description")
+        if not isinstance(desc, str):
+            continue
+        body = strip_code(desc)
+        for m in INLINE_LINK.finditer(body):
+            is_img = m.group(1) == "!"
+            target = m.group(2).strip()
+            low = target.lower()
+            if low.startswith(("http://", "https://", "mailto:", "command:", "#")):
+                continue  # external / command / in-page anchor — not a workspace ref
+            if not is_img and (target in raw_titles or target in display_steps):
+                # The antipattern: the (Title) paren form used for tour navigation.
+                # The player parses it as a (dead) file link, not a tour link.
+                failures.append(f"{label} step {i}: [...]({target}) is a file link to a tour "
+                                f"title; for tour navigation use [label][{get_tour_title(target)}]")
+            elif target.startswith("."):
+                # Player rewrites only '.'-prefixed paths (resolved at the workspace root).
+                if not (root / target).resolve().exists():
+                    failures.append(f"{label} step {i}: [...]({target}) -> file not found")
+            elif "/" in target or re.search(r"\.\w{1,8}$", target):
+                # Looks like a workspace path but won't be rewritten as written.
+                notes.append(f"  {label} step {i}: ({target}) — inline file links must "
+                             f"start with './' to open a workspace file")
+        if len(BOLD.findall(body)) % 2 == 1:
+            notes.append(f"  {label} step {i}: odd number of '**' — check for unbalanced bold")
+    return failures, notes
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__)
@@ -272,6 +326,7 @@ def main(argv):
     schema = load_schema()
     schema_note_shown = False
     referenced = {}  # svg abs path -> set of elements referenced by any step
+    link_note_acc = []  # informational inline-link / markdown hazards
 
     for path, tour in loaded:
         label = str(path.relative_to(target)) if cross_tour else path.name
@@ -333,6 +388,13 @@ def main(argv):
         ok = ok and not broken
         print(f"  references: {len(ref_results) - len(broken)} ok, {len(broken)} broken")
 
+        link_fail, link_notes = check_links(
+            label if cross_tour else "tour", tour, repo_root, raw_titles, display_steps)
+        for m in link_fail:
+            print("  FAIL " + m)
+        ok = ok and not link_fail
+        link_note_acc.extend(link_notes)
+
     # Informational (#non-failing): SVG anchors no step highlights.
     notes = []
     for svg, used in sorted(referenced.items()):
@@ -353,6 +415,10 @@ def main(argv):
         print("(expected for a shared overview map; only a concern if you meant to")
         print(" highlight one and a typo'd `element` resolved to a similar anchor)")
         for n in notes:
+            print(n)
+    if link_note_acc:
+        print("--- informational: inline links / markdown ---")
+        for n in link_note_acc:
             print(n)
 
     print("=> ALL PASS" if ok else "=> FAILURES PRESENT")

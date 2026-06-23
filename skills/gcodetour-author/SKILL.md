@@ -38,6 +38,26 @@ This is the single most important quality lever. Line numbers are ordinals that 
 - Make the pattern specific enough to match exactly one line.
 - **Grep-count each pattern before you write the step.** Run the regex against the target file (e.g. `grep -nE 'pattern' path/to/file`) and confirm it matches **exactly one** line up front — zero means a broken anchor, more than one means an ambiguous one. Doing this for every step as you go eliminates verifier round-trips at the end.
 
+## Authoring a multi-tour set
+
+Split distinct concerns into numbered, linked tours rather than one sprawling tour. The title/link rules are the highest-friction part of the format because the two link kinds use **opposite** forms — here they are side by side:
+
+- **Title** each tour `N - Display Title` (e.g. `2 - The Planning Pipeline`). Don't put a second ` - ` in the title: the player derives the *display* name by stripping the `N - ` prefix and would truncate at the next hyphen.
+- **`nextTour`** matches the **full, raw** title — `"nextTour": "2 - The Planning Pipeline"`.
+- **In-text tour links** use the **display** title (prefix stripped) in the **bracket–bracket** form — `[the planner][The Planning Pipeline]`, or to a step `[the parser][The Planning Pipeline#3]`. A bare `[The Planning Pipeline]` works too. Step-only links within the current tour are `[#3]` / `[label][#3]`.
+- **Do not** use the parenthesis form for tour navigation: `[Tour 2](2 - The Planning Pipeline)` is parsed as a **file** link to a nonexistent path and renders dead. Parentheses are for files/images only, and only with a `./` prefix (`[parser](./src/Core/ManifestCsvParser.cs)`) — without the `./` the player won't rewrite it to open the file.
+- **Author the cross-links last**, once every title is final, then run the verifier against the whole `.tours/` directory so `nextTour`, `[Title#n]`, `[#n]`, and inline `[label](./file)` links are all checked together.
+
+```jsonc
+// .tours/1-intro.tour
+{ "title": "1 - Intro", "isPrimary": true, "nextTour": "2 - The Planning Pipeline",
+  "steps": [ { "description": "### Overview\nThen dive into [the planner][The Planning Pipeline#2]." } ] }
+
+// .tours/2-pipeline.tour
+{ "title": "2 - The Planning Pipeline",
+  "steps": [ { "description": "### Parsing\nStarts in [ManifestCsvParser](./src/Core/ManifestCsvParser.cs)." } ] }
+```
+
 ## Authoring diagrams
 
 A tour can pair steps with **synchronized diagrams** so the reader sees the code *and* the system it lives in at once: a step's `diagram` opens an SVG beside the editor, highlights one element, and pins a short callout — moving in lockstep with navigation. Reach for this when a walkthrough benefits from architecture/flow context (a request lifecycle, a message/enrichment path, a cross-service user flow), not for every tour. The full field reference and the `ct://el/<alias>` convention are in [references/schema.md](references/schema.md#diagram-steps); the procedure below is the authoring loop.
@@ -152,7 +172,7 @@ python3 scripts/verify_tour.py <path-to.tour> <repo-root>
 python3 scripts/verify_tour.py <.tours-dir> <repo-root>   # also checks cross-tour navigation
 ```
 
-It validates against the bundled fork schema (draft-04), asserts every `file`+`pattern` step resolves to **exactly one** line, checks `directory` steps exist, rejects any step that sets `markerTitle`, validates `[#n]` step links resolve, and — for every `diagram` step — confirms the referenced SVG exists, has no PlantUML warning/error baked into the image (e.g. the deprecated-syntax notice), and contains an `<a href="ct://el/<element>">` for the step's `element`. **Point it at the whole `.tours/` directory for a multi-tour set** and it also checks that `nextTour` and `[Title#n]` links resolve across files (the rot that silently breaks navigation when a title is renamed), and reports SVG anchors no step highlights (a cheap way to catch a mistyped `element` that resolved to the wrong, similar anchor). It exits non-zero on failure, so it also drops straight into CI or a pre-commit hook. It needs no dependencies; `jsonschema`, if installed, adds full schema validation on top of the structural checks. (System Python is often PEP-668 "externally managed", so `pip install jsonschema` may be refused — install it in a virtualenv, or just rely on the dependency-free structural checks.)
+It validates against the bundled fork schema (draft-04), asserts every `file`+`pattern` step resolves to **exactly one** line, checks `directory` steps exist, rejects any step that sets `markerTitle`, validates `[#n]` step links resolve, checks inline `[label](./file)` links point at real files (and flags the `[label](Tour Title)` antipattern — a file-link form aimed at a tour, which renders dead), and — for every `diagram` step — confirms the referenced SVG exists, has no PlantUML warning/error baked into the image (e.g. the deprecated-syntax notice), and contains an `<a href="ct://el/<element>">` for the step's `element`. **Point it at the whole `.tours/` directory for a multi-tour set** and it also checks that `nextTour` and `[Title#n]` links resolve across files (the rot that silently breaks navigation when a title is renamed), and reports SVG anchors no step highlights (a cheap way to catch a mistyped `element` that resolved to the wrong, similar anchor). It exits non-zero on failure, so it also drops straight into CI or a pre-commit hook. It needs no dependencies; `jsonschema`, if installed, adds full schema validation on top of the structural checks. (System Python is often PEP-668 "externally managed", so `pip install jsonschema` may be refused — install it in a virtualenv, or just rely on the dependency-free structural checks.)
 
 - **Run the verifier** and fix anything it flags. A `pattern` matching zero or many lines is a broken step — never ship one. A `diagram.element` with no matching `ct://el/` anchor in the SVG is equally broken — re-tag the source and re-render.
 - **Set `$schema`** to `https://raw.githubusercontent.com/greglamb/gcodetour/main/schema.json` so the user's editor flags problems too.
