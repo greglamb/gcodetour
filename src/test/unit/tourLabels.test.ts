@@ -72,6 +72,13 @@ describe("getTourTitle", () => {
     assert.equal(getTourTitle(tour({ title: "#2 - Advanced" })), "Advanced");
   });
 
+  it("keeps later hyphens in the title (only strips the prefix)", () => {
+    assert.equal(
+      getTourTitle(tour({ title: "1 - Jobs - Phase 2" })),
+      "Jobs - Phase 2"
+    );
+  });
+
   it("returns the title unchanged when there is no numeric prefix", () => {
     assert.equal(getTourTitle(tour({ title: "Onboarding" })), "Onboarding");
   });

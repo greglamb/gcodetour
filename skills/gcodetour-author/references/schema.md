@@ -111,11 +111,13 @@ Step `description` supports full markdown plus these CodeTour extensions:
 | File reference | `[label](./relative/path)` | Hyperlink that opens the workspace file. |
 | Image | `![alt](./relative/img.png)` | Renders the image inline in the step. |
 | Step reference | `[#2]` or `[label][#2]` | Jumps to step 2 (1-based) in the current tour. |
-| Tour reference | `[Tour Title]`, `[Tour Title#3]`, `[label][Tour Title]` | Starts another tour (optionally at a step). |
+| Tour reference | `[Display Title]`, `[Display Title#3]`, `[label][Display Title]` | Starts another tour (optionally at a step). |
 | Code block | ```` ```lang ... ``` ```` | Renders an **Insert Code** link that inserts the snippet at the step's line (auto-formatted). |
 | Shell command | `>> npm run build` | Renders a link that runs the command in a `CodeTour` integrated terminal. |
 | Command link | `[label](command:commandId?["arg"])` | Runs any VS Code command. Args are a JSON array in the query string. |
 | Env var | `{{VAR_NAME}}` | Replaced with the user's environment variable at playback (published-extension feature). |
+
+**Tour references use the _displayed_ title, not the raw one.** For a numbered tour, the player resolves `[Display Title]` against the title with its `N - ` prefix stripped. So a tour titled `2 - The Pipeline` is referenced as `[The Pipeline]` / `[The Pipeline#11]` — **not** `[2 - The Pipeline#11]`, which silently won't resolve (a bare unresolved `[…]` just renders as text). This is the opposite of `nextTour`, which is matched against the **full, raw** title (`"2 - The Pipeline"`). Two more gotchas: the prefix strip splits on the *first* hyphen only in concept but the player splits on *every* hyphen, so avoid a second ` - ` in a numbered title (`1 - Jobs - Phase 2` resolves as just `Jobs`); and `[#n]` (no title) is always a step jump within the current tour. `verify_tour.py` (directory mode) checks all of these and suggests the corrected form.
 
 Well-known command-link targets the player suggests: `Navigate to tour step`, `Open URL`, `Run build task`, `Run task`, `Run test task`, `Run terminal command...`, `Start tour...`.
 

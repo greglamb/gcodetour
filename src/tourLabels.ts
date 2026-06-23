@@ -40,7 +40,10 @@ export function getStepLabel(
 
 export function getTourTitle(tour: CodeTour) {
   if (tour.title.match(/^#?\d+\s-/)) {
-    return tour.title.split("-")[1].trim();
+    // Strip the leading "N - " prefix, keeping the rest of the title intact.
+    // (Splitting on "-" would truncate a title with a second hyphen, e.g.
+    // "1 - Jobs - Phase 2" -> "Jobs".)
+    return tour.title.slice(tour.title.indexOf("-") + 1).trim();
   }
 
   return tour.title;

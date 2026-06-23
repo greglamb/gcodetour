@@ -77,6 +77,29 @@ PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, o
 - **Activity swim lanes** → a user/actor flow that crosses service or team boundaries.
 - Prefer **several focused diagrams** over one dense one. Each step should highlight **exactly one** element.
 
+### Recipe: colour by implementation status
+
+Touring a half-built or in-progress codebase is one of the most common reasons to write a tour, and the highest-leverage diagram move is to colour C4 elements by **maturity, not by layer** — so "what's real vs. aspirational" is legible at a glance. Define status tags and apply them per element:
+
+```
+@startuml
+!include <C4/C4_Container>
+!theme C4_blue_new from <C4/themes>
+skinparam defaultFontName Roboto
+AddElementTag("done",    $bgColor="#2E7D32", $fontColor="#FFFFFF", $legendText="implemented")
+AddElementTag("partial", $bgColor="#F9A825", $fontColor="#000000", $legendText="partial / stubbed")
+AddElementTag("todo",    $bgColor="#C62828", $fontColor="#FFFFFF", $legendText="not implemented")
+AddElementTag("orphan",  $bgColor="#9E9E9E", $fontColor="#FFFFFF", $legendText="dead / unwired")
+
+Container(api,    "Order API",  "C#", "Accepts orders",     $tags="done",    $link="ct://el/api")
+Container(worker, "Enricher",   "C#", "Polls + enriches",   $tags="partial", $link="ct://el/worker")
+Container(ml,     "Scorer",     "C#", "Risk model",         $tags="todo",    $link="ct://el/ml")
+SHOW_LEGEND()
+@enduml
+```
+
+Put `SHOW_LEGEND()` at the **end** of the diagram so the colour key renders *with your `$legendText`* (the older `LAYOUT_WITH_LEGEND()` only shows the default element-type legend, not your status tags). This pairs naturally with the [stub-hunting instruction](#authoring-procedure) — the diagram shows the maturity map; the steps explain each gap. Green/amber/red/grey reads on both editor themes (the diagram bakes its own background).
+
 ### Making elements addressable (the `ct://el/<alias>` sentinel)
 
 PlantUML has no stable element IDs, so tag every element a step will target with a sentinel hyperlink — PlantUML wraps linked elements in an `<a href="ct://el/<alias>">`, which the player resolves.
@@ -134,6 +157,8 @@ It validates against the bundled fork schema (draft-04), asserts every `file`+`p
 - **Run the verifier** and fix anything it flags. A `pattern` matching zero or many lines is a broken step — never ship one. A `diagram.element` with no matching `ct://el/` anchor in the SVG is equally broken — re-tag the source and re-render.
 - **Set `$schema`** to `https://raw.githubusercontent.com/greglamb/gcodetour/main/schema.json` so the user's editor flags problems too.
 - **Mark inferred intent as inferred.** The structural facts (what calls what, what a function does) are observable. The *why* — intent, the reason a decision was made — is usually a guess, and a confident wrong guess is how an AI-written tour misleads a reader into thinking a module is understood when it isn't. When a step states rationale you couldn't verify from the code itself, hedge it visibly ("this looks intended to…", "presumably so that…") so a reviewer knows exactly which claims to confirm. This is the difference between a tour that transfers a real mental model and one that just looks authoritative.
+- **Re-read the source for any relayed structural claim.** Distinct from intent-hedging: when a *survey* — a subagent, a grep summary, prior notes — reports "X throws", "Y is a stub", "Z is buggy", it reads as observed fact and lands in the tour as fact. Re-open the actual line before you write a load-bearing claim like that; a relayed wrong fact (a "bug" on a line that's actually correct) misleads the reader exactly as much as a wrong guess, but slips past the intent-hedging rule because it looks observed.
+- **Markdown rendering isn't verified.** The verifier proves anchors and links resolve; it can't see that the description *renders* wrong. Wrap identifiers in backticks (`` `CoordinatorGrain` `` — otherwise `Coordinat**or**Grain` bold-renders mid-word), avoid intra-word `*`/`_`, and watch unescaped `#`, `<`, `|`, `[` that can break a heading or table. Eyeball the rendered step, not just the JSON.
 - **Flag uncertainty honestly.** The verifier proves anchors resolve, not that the *explanations* are correct. On a large or unfamiliar codebase, tell the user which steps to spot-check, especially if the tour will be committed for teammates.
 
 ## Output

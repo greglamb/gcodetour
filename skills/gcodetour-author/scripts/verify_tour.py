@@ -151,10 +151,21 @@ def check_diagram(index, step, repo_root):
 
 
 def get_tour_title(title):
-    """Mirror src/tourLabels.ts getTourTitle: strip a leading 'N - ' prefix."""
+    """Mirror src/tourLabels.ts getTourTitle: the DISPLAY title used to resolve
+    `[Title]` references (the title with a leading 'N - ' prefix stripped).
+
+    Must agree with the player byte-for-byte — it strips only the prefix and
+    keeps any later hyphens, so change both this and src/tourLabels.ts together.
+    """
     if re.match(r"^#?\d+\s-", title):
-        return title.split("-")[1].strip()
+        return title[title.index("-") + 1:].strip()
     return title
+
+
+def strip_number_prefix(title):
+    """Return `title` with a leading 'N - ' / '#N - ' prefix removed, else None."""
+    m = re.match(r"^#?\d+\s*-\s*(.+)$", title)
+    return m.group(1).strip() if m else None
 
 
 # Mirrors TOUR_REFERENCE_PATTERN in src/player/index.ts. Matches step refs
@@ -205,10 +216,20 @@ def check_references(label, tour, step_count, raw_titles, display_steps, cross_t
                         ok = 1 <= n <= display_steps[tt]
                         out.append((ok, f"{label} step {i}: [{tt}#{n}] -> "
                                         + ("resolved" if ok else f"step OUT OF RANGE (1..{display_steps[tt]})")))
-                elif sn and cross_tour:
-                    # [Title#n] is unambiguously a tour ref; a bare [Title] that
-                    # doesn't resolve is left alone (it may be ordinary prose).
-                    out.append((False, f"{label} step {i}: [{tt}#{sn}] -> NO tour has this title"))
+                    # bare [Title] that resolves: fine, nothing to report
+                else:
+                    stripped = strip_number_prefix(tt)
+                    suffix = f"#{sn}" if sn else ""
+                    if stripped and stripped in display_steps:
+                        # The common trap: author referenced the raw numbered title,
+                        # but the player resolves tour refs by the DISPLAY title.
+                        out.append((False, f"{label} step {i}: [{tt}{suffix}] -> tour "
+                                           f"references use the displayed title (no 'N - ' "
+                                           f"prefix); write [{stripped}{suffix}]"))
+                    elif sn and cross_tour:
+                        # [Title#n] is unambiguously a tour ref; a bare [Title] that
+                        # doesn't resolve is left alone (it may be ordinary prose).
+                        out.append((False, f"{label} step {i}: [{tt}#{sn}] -> NO tour has this title"))
     return out
 
 
@@ -326,9 +347,11 @@ def main(argv):
                 shown = svg.relative_to(Path(repo_root).resolve())
             except ValueError:
                 shown = svg
-            notes.append(f"note: {shown}: anchors defined but never highlighted by a step: {', '.join(unused)}")
+            notes.append(f"  {shown}: {', '.join(unused)}")
     if notes:
-        print("--- informational ---")
+        print("--- informational: anchors no step highlights ---")
+        print("(expected for a shared overview map; only a concern if you meant to")
+        print(" highlight one and a typo'd `element` resolved to a similar anchor)")
         for n in notes:
             print(n)
 
