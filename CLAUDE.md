@@ -124,3 +124,14 @@ tests, build) as a gate, then packages the `.vsix` and **creates** a GitHub Rele
 tagged `v<version>` with the `.vsix` attached (`gh release create`). `verify` only runs
 there — there is no separate push/PR CI workflow — so run it locally before pushing.
 Do not add `vsce publish` / marketplace steps.
+
+### Skill versioning
+
+The `gcodetour-author` skill carries its own version, independent of the extension —
+it ships via `npx skills`, not the `.vsix`. It uses the **same CalVer scheme**
+(`0.YYMM.DDBB`) but is bumped by hand: edit the `version:` field in
+`skills/gcodetour-author/SKILL.md` **and** the matching `*Skill version …*` line just
+under its H1, keeping the two in sync. Bump on every skill change. Nothing automated
+reads the field (the Claude Code loader only uses `name`/`description`, and `npx skills`
+tracks the source commit, not this field) — it exists so you can `head SKILL.md` on any
+machine to see what's installed.

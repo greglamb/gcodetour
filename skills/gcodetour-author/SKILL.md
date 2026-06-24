@@ -1,9 +1,12 @@
 ---
 name: gcodetour-author
+version: 0.2606.2401
 description: Author CodeTour walkthrough files (.tour JSON) that explain or onboard someone to a codebase, directly inside VS Code. Use this whenever the user wants to create, generate, or update a guided code tour, a codebase walkthrough, an onboarding tour, or a CodeTour file — or when they ask to "explain this codebase as a tour," "make a walkthrough of how X works," "document the request flow as steps," or point at an unfamiliar repo and ask for a guided introduction. Also use when editing existing .tour files or fixing tour drift. Can additionally generate synchronized architecture/flow diagrams (C4-PlantUML and activity swim lanes) that highlight in sync with the tour. Produces schema-valid .tour files anchored by regex pattern for resilience.
 ---
 
 # gCodeTour Author
+
+*Skill version 0.2606.2401* — to check what's installed on a machine, read the top of this file (`head SKILL.md`).
 
 Generate schema-valid CodeTour `.tour` files that walk a reader through a codebase step by step. The reader plays the tour back in VS Code (the CodeTour extension) and steps through annotated files with `Cmd/Ctrl + →`.
 
