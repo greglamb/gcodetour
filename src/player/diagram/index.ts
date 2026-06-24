@@ -7,7 +7,7 @@
 // dumb view. Reads SVG bytes via `workspace.fs` so it works in both the desktop
 // (node) and web (webworker) extension hosts.
 
-import { commands, ExtensionContext, Uri, workspace } from "vscode";
+import { commands, ExtensionContext, Uri, window, workspace } from "vscode";
 import { CodeTour, store } from "../../store";
 import { onDidEndTour, onDidStartTour } from "../../store/actions";
 import { parseDiagramFromStep } from "./model";
@@ -36,7 +36,21 @@ export function registerDiagramModule(context: ExtensionContext): void {
   });
   const endSub = onDidEndTour(() => handleEndTour());
 
-  context.subscriptions.push(startSub, endSub, {
+  // On an empty workbench the panel is created before the step's editor opens, so
+  // the editor lands in the panel's column and hides it. When an editor becomes
+  // active in the panel's column, move the panel beside it so both stay visible.
+  const editorSub = window.onDidChangeActiveTextEditor(editor => {
+    if (
+      panel &&
+      editor &&
+      editor.viewColumn !== undefined &&
+      panel.viewColumn === editor.viewColumn
+    ) {
+      panel.revealBeside();
+    }
+  });
+
+  context.subscriptions.push(startSub, endSub, editorSub, {
     dispose: () => disposePanel()
   });
 }

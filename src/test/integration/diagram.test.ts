@@ -132,4 +132,38 @@ describe("Synchronized diagrams", () => {
       "diagram panel should open on a content first step"
     );
   });
+
+  it("opens the diagram beside the editor when starting with no editors open", async () => {
+    // Regression: on an empty workbench the panel is created before the step's
+    // editor opens, so the editor would land in the panel's column and hide it
+    // (a "tab that isn't shown"). The panel must end up in its own column, beside
+    // the editor, and visible.
+    await vscode.commands.executeCommand("workbench.action.closeAllEditors");
+    await waitFor(() =>
+      vscode.window.tabGroups.all.every(g => g.tabs.length === 0)
+    );
+    await startSampleTour("Diagram Tour"); // file-first; waits for sample.js
+
+    await waitFor(() => diagramTabs().length === 1);
+    // Let the beside-fixup settle after the editor opens.
+    await waitFor(() => {
+      const dt = diagramTabs()[0];
+      return (
+        dt !== undefined &&
+        dt.group.viewColumn !== vscode.window.activeTextEditor?.viewColumn &&
+        dt.isActive
+      );
+    });
+
+    const diagramTab = diagramTabs()[0];
+    assert.notEqual(
+      diagramTab.group.viewColumn,
+      vscode.window.activeTextEditor?.viewColumn,
+      "diagram should be in its own column, not the editor's"
+    );
+    assert.ok(
+      diagramTab.isActive,
+      "diagram tab should be the visible (active) tab in its column"
+    );
+  });
 });

@@ -87,6 +87,16 @@ export class DiagramPanel {
     this.panel.reveal(undefined, true);
   }
 
+  /** The column the panel currently occupies (undefined if not visible). */
+  get viewColumn(): ViewColumn | undefined {
+    return this.panel.viewColumn;
+  }
+
+  /** Moves the panel to the column beside the active group (keeping focus). */
+  revealBeside(): void {
+    this.panel.reveal(ViewColumn.Beside, true);
+  }
+
   dispose(): void {
     // Triggers onDidDispose → handleDispose (idempotent).
     this.panel.dispose();

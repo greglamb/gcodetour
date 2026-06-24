@@ -4,6 +4,10 @@
 - Automatically set the "pattern" record mode when you create a new tour, and select `None` for the git ref
 - Added support for opening a `*.tour` file in the VS Code notebook editor (Insiders only)
 
+## v0.2606.2309 (06/23/26)
+
+- Fixed the diagram panel being hidden when a tour is started with **no editors open**. The panel is created before the step's editor opens, so the editor landed in the panel's column and covered it (the diagram showed as a background tab, or not at all). The panel now detects when an editor opens into its column and moves itself beside it — so the editor and diagram sit side by side and the diagram stays visible. (Earlier fix made the tab exist; this makes it actually shown.)
+
 ## v0.2606.2308 (06/23/26)
 
 - **Diagram highlight is now emphasis-only — no dimming.** Inactive elements are left full-color and fully readable; the active element is marked solely by a contrasting **gold border + glow**. This replaces the dim/fade approaches (opacity faded out white text on solid-fill boxes of any color; grayscale changed their look) and works identically for C4 and activity/swim-lane diagrams. A blue focus border couldn't stand out on a blue box — the gold contrasts on any fill.
