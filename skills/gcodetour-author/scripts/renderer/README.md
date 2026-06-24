@@ -1,10 +1,10 @@
-# Diagram renderer (pinned base, list-driven fonts)
+# Diagram renderer (pinned base, pinned fonts)
 
 This directory builds the Docker image that renders gCodeTour diagram SVGs. The
 Kroki base is pinned by digest; C4-PlantUML comes from the base image's bundled
-PlantUML stdlib (no vendoring); **fonts** are fetched by `fnt` at image build
-time (see Fonts). **Playback of a tour requires none of it** — only
-authoring/re-rendering does (see
+PlantUML stdlib (no vendoring); **fonts** are fetched from a pinned `google/fonts`
+commit at image build time (see Fonts). **Playback of a tour requires none of
+it** — only authoring/re-rendering does (see
 [`../render-diagrams.sh`](../render-diagrams.sh)).
 
 ## Renderer
@@ -18,9 +18,8 @@ only for humans. To move to a newer Kroki, `docker pull` the new tag, copy its
 `Digest:` into [`Dockerfile`](./Dockerfile) and this file, and re-render.
 
 The renderer the script actually runs is built from [`Dockerfile`](./Dockerfile):
-the pinned Kroki base above plus fonts installed by `fnt` (next section). Unlike
-the base, that font step **fetches from the network at build time and is not
-version-pinned** — a deliberate trade-off for list-driven font management.
+the pinned Kroki base above plus the fonts (next section). Both the base digest
+and the font commit are pinned, so the image is reproducible by pin.
 
 ## C4-PlantUML (bundled stdlib, not vendored)
 
@@ -38,19 +37,15 @@ image digest above. (Earlier revisions vendored the C4 `.puml` files and mounted
 them as a PlantUML include path; that's no longer needed.) To move to a different
 C4-PlantUML version, change the pinned Kroki image (whose PlantUML carries it).
 
-## Fonts (`fonts.list` + Jost)
+## Fonts (Jost default + Roboto)
 
 The **default** diagram font is **Jost**; **Roboto** is also kept and available.
-Rather than commit font binaries, the renderer image installs them at build time:
-
-- **Roboto** via [`fnt`](https://github.com/alexmyczko/fnt) ("apt for fonts")
-  from the names in [`fonts.list`](./fonts.list).
-- **Jost** directly from Google Fonts — it isn't in fnt's catalog (nor apt). The
-  [`Dockerfile`](./Dockerfile) downloads the variable `Jost[wght].ttf` and uses
-  `fonttools` to instance static **Regular (400)** and **Bold (700)** weights, so
-  fontconfig/PlantUML see a real "Jost" family.
-
-Fonts matter in two places, so the build handles both for each font:
+Rather than commit font binaries (or use `fnt`, which only had an old Debian
+Roboto and no Jost), the [`Dockerfile`](./Dockerfile) fetches both from a
+**pinned `google/fonts` commit** (`GOOGLE_FONTS_REF`). Both ship as variable
+fonts, so it instances static **Regular (400)** and **Bold (700)** weights with
+`fonttools` (Roboto also has a width axis, pinned to 100), giving real
+"Jost"/"Roboto" families. Fonts matter in two places, handled for each:
 
 1. **Measurement:** the static TTFs are installed so PlantUML sizes boxes with
    the actual font. Without it, PlantUML measures with a DejaVu fallback while the
@@ -62,16 +57,12 @@ Fonts matter in two places, so the build handles both for each font:
    it installed.
 
 Diagram sources select the default with `skinparam defaultFontName Jost` (or
-`Roboto` to opt into Roboto). To add another font, install it (fnt or Dockerfile),
-subset it in the Dockerfile, and pass it to `embed-svg-font.mjs` in the render
-script.
+`Roboto` to opt into Roboto).
 
-**Trade-off (no pinning):** `fnt` always fetches the *latest* font over the
-network at build time, so this renderer is intentionally **not** offline or
-reproducible-by-pin (Docker layer-caches the build between runs on one machine).
-To change the typeface: edit `fonts.list`, update `skinparam defaultFontName` in
-the `.puml` sources, and adjust the subset target in [`Dockerfile`](./Dockerfile).
-Fonts carry their own upstream licenses (Roboto is Apache-2.0, © Google).
-
-> In this base image, `fnt`'s catalog exposes Debian `fonts-*` packages (not the
-> Google Fonts catalog), so list a Debian package name (e.g. `fonts-roboto-unhinted`).
+**Reproducible.** Both fonts come from the pinned `GOOGLE_FONTS_REF` commit in the
+Dockerfile, so rebuilds get the same fonts (no more "latest, unpinned" fetch).
+To update fonts, bump `GOOGLE_FONTS_REF`. To add a font: download + instance it
+in the Dockerfile, subset it there, and pass it to `embed-svg-font.mjs` in the
+render script — then point `skinparam defaultFontName` at it in the `.puml`
+sources. Fonts carry their own upstream licenses (Jost and Roboto are both under
+the SIL Open Font License, © their authors).

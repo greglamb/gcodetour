@@ -3,22 +3,21 @@
 # render-diagrams.sh — render PlantUML/C4 diagram sources to addressable SVGs.
 #
 # Converts every `*.puml` in a diagram directory to a sibling `*.svg` using a
-# Kroki renderer image (built from the `renderer/` dir next to this script) that
-# installs fonts with `fnt` (apt for fonts) from `renderer/fonts.list` and
-# subsets the primary font (Roboto) to a compact woff2. C4-PlantUML is the
-# stdlib bundled inside the Kroki/PlantUML image (`!include <C4/...>`), so no C4
-# files are vendored and nothing is fetched from the network at render time.
-# After each render the Roboto woff2 is embedded into the SVG (as @font-face) so
-# the diagram displays in Roboto in any viewer, whether or not the reader has it.
+# Kroki renderer image (built from the `renderer/` dir next to this script). That
+# image fetches the diagram fonts (Jost default + Roboto) from a pinned
+# google/fonts commit, instances static weights, and subsets each to a compact
+# woff2. C4-PlantUML is the stdlib bundled inside the Kroki/PlantUML image
+# (`!include <C4/...>`), so no C4 files are vendored and nothing is fetched at
+# render time. After each render BOTH fonts' woff2 are embedded into the SVG (as
+# @font-face) so it displays correctly in any viewer, whichever font it uses.
 #
 # This script is self-contained: it finds `renderer/` and `embed-svg-font.mjs`
 # relative to its own location, so it works whether it lives in this repo or is
 # installed into another project via the gcodetour-author skill. It only needs a
 # target diagram directory (default `.tours/diagrams`, resolved from the CWD).
 #
-# NOTE: `fnt` fetches the latest fonts from the network at *image build* time and
-# cannot pin a version — so the renderer is intentionally NOT offline/
-# reproducible-by-pin (unlike the digest-pinned base). See renderer/README.md.
+# The build fetches the fonts from the pinned google/fonts commit in
+# renderer/Dockerfile, so it's reproducible-by-pin (like the digest-pinned base).
 #
 # These SVGs are what gCodeTour's synchronized-diagram steps display: each element
 # tagged in the source with a `ct://el/<alias>` hyperlink is wrapped by PlantUML
@@ -30,13 +29,13 @@
 # Environment:
 #   KROKI_PORT    Host port to publish the renderer on (default 8753).
 #
-# Requirements: Docker (builds + runs the renderer; the build needs network for
-# fnt), curl, and node (embeds the font). Playback of a tour needs NONE of this.
+# Requirements: Docker (builds + runs the renderer; the build needs network to
+# fetch the fonts), curl, and node (embeds the fonts). Playback needs NONE of it.
 # Written for portable Bash 3.2.
 
 set -eu
 
-RENDERER_TAG="gcodetour-kroki:fnt"
+RENDERER_TAG="gcodetour-kroki:render"
 KROKI_PORT="${KROKI_PORT:-8753}"
 
 # Resolve paths relative to this script so it runs from any CWD / install location.
@@ -81,9 +80,10 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # --- Build the renderer image -------------------------------------------------
-# fnt fetches the fonts in fonts.list; Docker layer-caches this when fonts.list
-# (and the Dockerfile) are unchanged, so repeat renders don't re-hit the network.
-echo "Building renderer image $RENDERER_TAG (fnt installs renderer/fonts.list) ..."
+# The build fetches the fonts from the pinned google/fonts commit in the
+# Dockerfile; Docker layer-caches this when the Dockerfile is unchanged, so
+# repeat renders don't re-hit the network.
+echo "Building renderer image $RENDERER_TAG (fonts from pinned google/fonts) ..."
 docker build -t "$RENDERER_TAG" "$RENDERER_DIR"
 
 # --- Extract the embed woff2 from the built image (nothing committed) ----------

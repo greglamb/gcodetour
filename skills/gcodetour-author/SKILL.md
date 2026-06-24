@@ -64,7 +64,7 @@ A tour can pair steps with **synchronized diagrams** so the reader sees the code
 
 ### Toolchain (fixed)
 
-PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, or GUI tools. Architecture views use C4 (`C4_Context`/`C4_Container`/`C4_Component`/`C4_Deployment`/`C4_Dynamic`); cross-actor user flows use **PlantUML activity swim lanes** (the `|Lane|` form, which needs no Graphviz). Everything renders to SVG via the skill's bundled, pinned toolchain (a digest-pinned Kroki image with C4-PlantUML in its stdlib; fonts installed by `fnt`) — never add a new dependency.
+PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, or GUI tools. Architecture views use C4 (`C4_Context`/`C4_Container`/`C4_Component`/`C4_Deployment`/`C4_Dynamic`); cross-actor user flows use **PlantUML activity swim lanes** (the `|Lane|` form, which needs no Graphviz). Everything renders to SVG via the skill's bundled, pinned toolchain (a digest-pinned Kroki image with C4-PlantUML in its stdlib; fonts from a pinned google/fonts commit) — never add a new dependency.
 
 ### Theming
 
@@ -88,7 +88,7 @@ PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, o
 - **C4 diagrams** already bake a white background automatically — nothing to do.
 - **Activity / swim-lane diagrams** are transparent by default, so add `skinparam backgroundColor <color>` right after the `!theme` line — `#FFFFFF` for the default `bluegray` (or any light theme); a dark color (e.g. `#1B1B1B`) only if you switched to a dark theme. Use `skinparam backgroundColor`, not a hand-drawn full-canvas rectangle — you don't know the canvas size ahead of time, and the skinparam is the idiomatic one-liner.
 
-**Fonts.** Diagrams default to **Jost** — add `skinparam defaultFontName Jost` (after the `!theme`/`!include`). **Roboto** is also bundled, so `skinparam defaultFontName Jost` works too. The render pipeline installs both into the renderer image (so PlantUML *measures* boxes with the real font) and embeds a subset of **both** into every SVG (so it *displays* correctly in any viewer, even if the reader doesn't have the font). To use yet another font, add it to the renderer (fnt or the Dockerfile) and embed it — see `scripts/renderer/README.md`; naming a font the renderer doesn't install makes measurement and display disagree. Name a bundled font **only** when you render with this pipeline; if you skip the renderer, drop the `skinparam` so measurement and display agree on the default.
+**Fonts.** Diagrams default to **Jost** — add `skinparam defaultFontName Jost` (after the `!theme`/`!include`). **Roboto** is also bundled, so `skinparam defaultFontName Jost` works too. The render pipeline installs both into the renderer image (so PlantUML *measures* boxes with the real font) and embeds a subset of **both** into every SVG (so it *displays* correctly in any viewer, even if the reader doesn't have the font). To use yet another font, add it to the renderer Dockerfile (fetch + instance + subset) and embed it — see `scripts/renderer/README.md`; naming a font the renderer doesn't install makes measurement and display disagree. Name a bundled font **only** when you render with this pipeline; if you skip the renderer, drop the `skinparam` so measurement and display agree on the default.
 
 ### Choosing a diagram type
 
@@ -152,7 +152,7 @@ Keep `'` comments in activity sources short and free of `[[…]]`/`<…>` link s
 ### Render → reference loop
 
 1. Write sources to `.tours/diagrams/*.puml`. C4 files start with `!include <C4/C4_Container>` (or `<C4/C4_Dynamic>`, etc.) — C4-PlantUML ships in the renderer's bundled PlantUML stdlib, so this resolves offline with nothing vendored. Activity/swim-lane files start with `!theme bluegray` (see [Theming](#theming)) and declare the first `|Lane|` before `start`.
-2. Render with the skill's bundled `scripts/render-diagrams.sh [diagram-dir]` (default `.tours/diagrams`). It builds a digest-pinned Kroki image (installing the fonts in `scripts/renderer/fonts.list`) and writes a sibling `*.svg` per source. Requires Docker, curl, and node; **playback requires none of them**. Commit the `.svg` files so tours play without the renderer.
+2. Render with the skill's bundled `scripts/render-diagrams.sh [diagram-dir]` (default `.tours/diagrams`). It builds a digest-pinned Kroki image (fonts fetched from a pinned google/fonts commit) and writes a sibling `*.svg` per source. Requires Docker, curl, and node; **playback requires none of them**. Commit the `.svg` files so tours play without the renderer.
 3. Reference each rendered SVG from steps via `diagram: { path, element, callout }`.
 
 ### Interleaving with code

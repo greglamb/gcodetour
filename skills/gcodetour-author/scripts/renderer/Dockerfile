@@ -2,44 +2,40 @@
 #
 # Why a custom image: the base Kroki image doesn't ship our fonts, so PlantUML
 # would *measure* text (to size boxes) with a fallback (DejaVu Sans) while the
-# diagrams reference Jost/Roboto — a layout-vs-display mismatch. We install the
-# fonts (Roboto via `fnt` from fonts.list; Jost fetched from Google Fonts since
-# fnt has no Jost), then subset each to a small woff2 the render script embeds
-# into every SVG for display. The DEFAULT diagram font is Jost; Roboto is kept.
+# diagrams reference Jost/Roboto — a layout-vs-display mismatch. We fetch both
+# fonts from google/fonts, instance static weights, then subset each to a small
+# woff2 the render script embeds into every SVG for display. The DEFAULT diagram
+# font is Jost; Roboto is kept (and also embedded).
 #
 # C4-PlantUML ships in the base image's PlantUML stdlib, so sources use
 # `!include <C4/...>` — nothing is vendored or fetched at render time.
 #
-# NOTE: `fnt` fetches the latest fonts from the network at build time and cannot
-# pin a version, so this image is intentionally NOT offline/reproducible-by-pin
-# (unlike the digest-pinned base). See README.md.
+# Reproducible by pin: the base is pinned by digest and the fonts by a google/fonts
+# commit (GOOGLE_FONTS_REF below) — bump that SHA to update fonts. See README.md.
 FROM yuzutech/kroki@sha256:c16303ecd8ae840a6e3a76efa53468836c6297eeb7b7316845c3b24e8dbd0398
 
 USER root
 
-# fnt = "apt for fonts"; fonttools + brotli give us pyftsubset (woff2 subsetting).
+# fonttools (varLib.instancer + pyftsubset) + brotli (woff2); curl for the fetch.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends fnt fonttools python3-brotli \
+ && apt-get install -y --no-install-recommends curl ca-certificates fonttools python3-brotli \
  && rm -rf /var/lib/apt/lists/*
 
-# Install every font named in fonts.list (skipping blanks/comments).
-COPY fonts.list /tmp/fonts.list
-RUN fnt update \
- && while IFS= read -r font; do \
-      case "$font" in ""|\#*) continue ;; esac; \
-      echo "fnt install $font"; fnt install "$font"; \
-    done < /tmp/fonts.list \
- && fc-cache -f
-
-# Jost is the default diagram font but isn't in fnt's catalog (nor apt), so fetch
-# it from Google Fonts as a variable font and instance static 400/700 weights
-# (so fontconfig/PlantUML see a real "Jost" Regular + Bold for correct measuring).
-RUN curl -fsSL -o /tmp/jost-var.ttf \
-      "https://raw.githubusercontent.com/google/fonts/main/ofl/jost/Jost%5Bwght%5D.ttf" \
- && python3 -m fontTools.varLib.instancer /tmp/jost-var.ttf wght=400 \
+# Fetch both fonts from a PINNED google/fonts commit and instance static
+# Regular(400)/Bold(700) so fontconfig/PlantUML see real "Jost"/"Roboto" families
+# (both ship as variable fonts; Roboto also has a width axis, pinned to 100).
+ARG GOOGLE_FONTS_REF=e2ff3c28d1ce433a95ee071a0861b2a75235ef9b
+RUN base="https://raw.githubusercontent.com/google/fonts/${GOOGLE_FONTS_REF}" \
+ && curl -fsSL -o /tmp/jost.ttf   "${base}/ofl/jost/Jost%5Bwght%5D.ttf" \
+ && curl -fsSL -o /tmp/roboto.ttf "${base}/ofl/roboto/Roboto%5Bwdth,wght%5D.ttf" \
+ && python3 -m fontTools.varLib.instancer /tmp/jost.ttf wght=400 \
       --update-name-table -o /usr/local/share/fonts/Jost-Regular.ttf \
- && python3 -m fontTools.varLib.instancer /tmp/jost-var.ttf wght=700 \
+ && python3 -m fontTools.varLib.instancer /tmp/jost.ttf wght=700 \
       --update-name-table -o /usr/local/share/fonts/Jost-Bold.ttf \
+ && python3 -m fontTools.varLib.instancer /tmp/roboto.ttf wght=400 wdth=100 \
+      --update-name-table -o /usr/local/share/fonts/Roboto-Regular.ttf \
+ && python3 -m fontTools.varLib.instancer /tmp/roboto.ttf wght=700 wdth=100 \
+      --update-name-table -o /usr/local/share/fonts/Roboto-Bold.ttf \
  && fc-cache -f
 
 # Subset each font (Jost default + Roboto) to a compact woff2 the render script
