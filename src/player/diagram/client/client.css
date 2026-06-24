@@ -49,7 +49,10 @@ body {
   text-decoration: none;
 }
 
-/* Highlight + dim treatments are reversible per step (driven by class toggles). */
+/* The active element is marked ONLY by a contrasting gold border + glow — nothing
+   is dimmed, so every node stays full-colour and readable (a blue focus border
+   can't stand out on a blue box, and fading washed out white text on solid
+   fills). The gold is fixed because diagrams bake their own white background. */
 .ct-highlight {
   outline: none;
 }
@@ -66,22 +69,9 @@ ellipse.ct-highlight,
 circle.ct-highlight,
 polygon.ct-highlight,
 path.ct-highlight {
-  stroke: var(--vscode-focusBorder, #007fd4);
-  stroke-width: 3px;
-  filter: drop-shadow(0 0 4px var(--vscode-focusBorder, #007fd4));
-}
-
-/* Inactive elements are muted but must stay legible. Desaturate to grey (keeping
-   the box's darkness, so white/dark text keeps its contrast) plus a slight fade —
-   rather than lightening via opacity alone, which washed out white text on a
-   solid-fill box of any colour (blue, red, green…). Reads as the "inactive grey"
-   the C4 themes already use. Applied to the whole node (box + label). */
-.ct-dim {
-  filter: grayscale(1);
-  opacity: 0.85;
-  transition:
-    opacity 0.15s ease-in-out,
-    filter 0.15s ease-in-out;
+  stroke: #ffb300;
+  stroke-width: 4px;
+  filter: drop-shadow(0 0 6px #ffb300) drop-shadow(0 0 2px #ffb300);
 }
 
 #diagram-callout {

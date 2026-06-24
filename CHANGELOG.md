@@ -4,6 +4,10 @@
 - Automatically set the "pattern" record mode when you create a new tour, and select `None` for the git ref
 - Added support for opening a `*.tour` file in the VS Code notebook editor (Insiders only)
 
+## v0.2606.2308 (06/23/26)
+
+- **Diagram highlight is now emphasis-only — no dimming.** Inactive elements are left full-color and fully readable; the active element is marked solely by a contrasting **gold border + glow**. This replaces the dim/fade approaches (opacity faded out white text on solid-fill boxes of any color; grayscale changed their look) and works identically for C4 and activity/swim-lane diagrams. A blue focus border couldn't stand out on a blue box — the gold contrasts on any fill.
+
 ## v0.2606.2307 (06/23/26)
 
 - **Diagram dim** now desaturates inactive elements to grey instead of lightening them. Reducing opacity washed out white (or dark) label text on a solid-fill box of any color — blue, red, green — making inactive nodes unreadable. Grey-out keeps the box's darkness, so the text keeps its contrast, and it reads like the "inactive grey" the C4 themes already use. Fixes both C4 and activity/swim-lane diagrams.

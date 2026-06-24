@@ -131,7 +131,6 @@ function applyHighlight(
     const target = findTarget(element);
     if (target) {
       addClass(target, "ct-highlight");
-      dimOthers(target);
       // The diagram renders at natural size and scrolls, so bring the focused
       // element into view (only scrolls when it isn't already visible).
       target.scrollIntoView({
@@ -150,9 +149,9 @@ function applyHighlight(
 // An addressable node is the sentinel `<a>` plus its box shape. C4 wraps the box
 // inside the `<a>`; activity/swim-lane diagrams emit the box `<rect>` as the
 // sibling immediately before the `<a>` (the `<a>` then holds only the label). We
-// apply highlight/dim to BOTH so the whole node reacts as one — otherwise dimming
-// only fades an activity node's text and leaves its box fully opaque (an
-// unreadable blank box).
+// mark BOTH so the gold highlight border lands on the node's box, not just the
+// label. Inactive nodes are left untouched — emphasis comes from the highlight
+// alone, never from dimming (which washed out solid-fill boxes).
 const NODE_SHAPES = /^(rect|ellipse|polygon|circle|path)$/i;
 
 function nodeParts(anchor: Element): Element[] {
@@ -192,16 +191,6 @@ function findTarget(alias: string): Element | null {
   return null;
 }
 
-function dimOthers(target: Element): void {
-  for (const anchor of Array.from(surface.querySelectorAll("a"))) {
-    const href =
-      anchor.getAttribute("href") ?? anchor.getAttribute("xlink:href");
-    if (isSentinelHref(href) && anchor !== target) {
-      addClass(anchor, "ct-dim");
-    }
-  }
-}
-
 function positionCallout(): void {
   const target =
     highlightedAlias !== undefined ? findTarget(highlightedAlias) : null;
@@ -239,9 +228,6 @@ function positionCallout(): void {
 function clearHighlightState(): void {
   for (const el of Array.from(surface.querySelectorAll(".ct-highlight"))) {
     el.classList.remove("ct-highlight");
-  }
-  for (const el of Array.from(surface.querySelectorAll(".ct-dim"))) {
-    el.classList.remove("ct-dim");
   }
   highlightedAlias = undefined;
   calloutText = undefined;
