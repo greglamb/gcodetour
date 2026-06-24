@@ -25,7 +25,10 @@ Checks (standard library only):
     indistinguishable from ordinary bracketed prose, so it is never flagged.
   - Informational: SVG anchors that no step highlights (catches an intended-but-
     mistyped `element` that happens to resolve to the wrong, similar anchor);
-    inline links missing a `./` prefix; and unbalanced `**` (bold) in a step
+    inline links missing a `./` prefix; unbalanced `**` (bold) in a step; and
+    step order/placement (an intro/welcome step that isn't first; consecutive
+    same-file steps that jump backwards) — these order checks never fail the run,
+    they prompt the final read-through
 
 If the `jsonschema` package and the bundled references/schema.json are both
 available, full JSON Schema (draft-04) validation runs too; otherwise it is
@@ -287,6 +290,81 @@ def check_links(label, tour, repo_root, raw_titles, display_steps):
     return failures, notes
 
 
+# Headings that read like a tour's OPENING — an intro/welcome step usually belongs
+# at position 1, not stranded mid-tour. Deliberately conservative (no bare
+# "overview", which is legitimately common mid-tour) to keep this high-signal.
+INTRO_HEADING = re.compile(
+    r"\b(welcome|introduction|getting started|before you (begin|start)|"
+    r"read me first|prerequisites|what (this tour|we'?ll|you'?ll) (cover|learn))\b",
+    re.I,
+)
+
+
+def first_heading(desc):
+    """The step's first markdown heading text, else its first non-empty line."""
+    for line in desc.splitlines():
+        s = line.strip()
+        if not s:
+            continue
+        m = re.match(r"#{1,6}\s+(.*)", s)
+        return (m.group(1) if m else s).strip()
+    return ""
+
+
+def resolve_line(step, repo_root):
+    """Best-effort 1-based line for a step: an explicit `line`, or a `pattern`
+    that resolves to exactly one line. None when it can't be pinned down."""
+    if isinstance(step.get("line"), int):
+        return step["line"]
+    if isinstance(step.get("file"), str) and isinstance(step.get("pattern"), str):
+        fp = Path(repo_root) / step["file"]
+        if not fp.is_file():
+            return None
+        try:
+            rx = re.compile(step["pattern"])
+        except re.error:
+            return None
+        hits = [n for n, ln in enumerate(fp.read_text(errors="replace").splitlines(), 1)
+                if rx.search(ln)]
+        if len(hits) == 1:
+            return hits[0]
+    return None
+
+
+def check_structure(tour, repo_root):
+    """Informational, NON-failing heuristics on step ORDER and placement — the
+    mechanical proxies for "read it as a reader" that a script can manage. They
+    flag candidates for the agent's final read-through; they never fail the run
+    (order can be deliberate, and prose quality is the agent's call, not a regex).
+
+    Returns a list of note strings:
+      - an intro/welcome heading at a position other than step 1
+      - consecutive same-file steps whose line numbers go backwards
+    """
+    notes = []
+    steps = tour.get("steps") or []
+
+    for i, step in enumerate(steps, 1):
+        desc = step.get("description")
+        if i > 1 and isinstance(desc, str):
+            head = first_heading(desc)
+            if INTRO_HEADING.search(head):
+                notes.append(f"step {i} (\"{head[:50]}\") reads like an introduction "
+                             f"— welcome/intro steps usually belong at step 1")
+
+    prev_file = prev_line = None
+    for i, step in enumerate(steps, 1):
+        f = step.get("file") if isinstance(step.get("file"), str) else None
+        ln = resolve_line(step, repo_root) if f else None
+        if (f and f == prev_file and ln is not None and prev_line is not None
+                and ln < prev_line):
+            notes.append(f"steps {i - 1}->{i} jump backwards in {f} "
+                         f"(line {prev_line} -> {ln}) — confirm the order is intentional")
+        prev_file, prev_line = f, ln  # reset on content steps so only adjacent same-file pairs compare
+
+    return notes
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__)
@@ -327,6 +405,7 @@ def main(argv):
     schema_note_shown = False
     referenced = {}  # svg abs path -> set of elements referenced by any step
     link_note_acc = []  # informational inline-link / markdown hazards
+    struct_note_acc = []  # informational step-order / placement signals
 
     for path, tour in loaded:
         label = str(path.relative_to(target)) if cross_tour else path.name
@@ -395,6 +474,9 @@ def main(argv):
         ok = ok and not link_fail
         link_note_acc.extend(link_notes)
 
+        lbl = label if cross_tour else "tour"
+        struct_note_acc.extend(f"  {lbl} {n}" for n in check_structure(tour, repo_root))
+
     # Informational (#non-failing): SVG anchors no step highlights.
     notes = []
     for svg, used in sorted(referenced.items()):
@@ -419,6 +501,12 @@ def main(argv):
     if link_note_acc:
         print("--- informational: inline links / markdown ---")
         for n in link_note_acc:
+            print(n)
+    if struct_note_acc:
+        print("--- informational: step order & placement (do the final read-through) ---")
+        print("(never fails the run — order can be deliberate; these are candidates")
+        print(" for the agent's read-through, not verdicts)")
+        for n in struct_note_acc:
             print(n)
 
     print("=> ALL PASS" if ok else "=> FAILURES PRESENT")
