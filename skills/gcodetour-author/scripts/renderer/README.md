@@ -37,32 +37,29 @@ image digest above. (Earlier revisions vendored the C4 `.puml` files and mounted
 them as a PlantUML include path; that's no longer needed.) To move to a different
 C4-PlantUML version, change the pinned Kroki image (whose PlantUML carries it).
 
-## Fonts (Jost default + Roboto)
+## Fonts (Jost)
 
-The **default** diagram font is **Jost**; **Roboto** is also kept and available.
-Rather than commit font binaries (or use `fnt`, which only had an old Debian
-Roboto and no Jost), the [`Dockerfile`](./Dockerfile) fetches both from a
-**pinned `google/fonts` commit** (`GOOGLE_FONTS_REF`). Both ship as variable
-fonts, so it instances static **Regular (400)** and **Bold (700)** weights with
-`fonttools` (Roboto also has a width axis, pinned to 100), giving real
-"Jost"/"Roboto" families. Fonts matter in two places, handled for each:
+The diagram font is **Jost**. Rather than commit font binaries (or use `fnt`,
+which only had an old Debian Roboto and no Jost), the [`Dockerfile`](./Dockerfile)
+fetches it from a **pinned `google/fonts` commit** (`GOOGLE_FONTS_REF`). Jost
+ships as a variable font, so it instances static **Regular (400)** and **Bold
+(700)** weights with `fonttools`, giving a real "Jost" family. Fonts matter in
+two places, handled for each:
 
 1. **Measurement:** the static TTFs are installed so PlantUML sizes boxes with
    the actual font. Without it, PlantUML measures with a DejaVu fallback while the
-   SVG names Jost/Roboto — a layout-vs-display mismatch.
-2. **Display:** each is subsetted to a compact woff2 with `pyftsubset`;
-   [`../render-diagrams.sh`](../render-diagrams.sh) extracts them and embeds
-   **both** into every SVG (via [`../embed-svg-font.mjs`](../embed-svg-font.mjs)),
-   so a diagram in either font displays in any viewer without the reader having
-   it installed.
+   SVG names Jost — a layout-vs-display mismatch.
+2. **Display:** it is subsetted to a compact woff2 with `pyftsubset`;
+   [`../render-diagrams.sh`](../render-diagrams.sh) extracts it and embeds it into
+   every SVG (via [`../embed-svg-font.mjs`](../embed-svg-font.mjs)), so a diagram
+   displays in any viewer without the reader having the font installed.
 
-Diagram sources select the default with `skinparam defaultFontName Jost` (or
-`Roboto` to opt into Roboto).
+Diagram sources select it with `skinparam defaultFontName Jost`.
 
-**Reproducible.** Both fonts come from the pinned `GOOGLE_FONTS_REF` commit in the
-Dockerfile, so rebuilds get the same fonts (no more "latest, unpinned" fetch).
-To update fonts, bump `GOOGLE_FONTS_REF`. To add a font: download + instance it
-in the Dockerfile, subset it there, and pass it to `embed-svg-font.mjs` in the
+**Reproducible.** Jost comes from the pinned `GOOGLE_FONTS_REF` commit in the
+Dockerfile, so rebuilds get the same font (no more "latest, unpinned" fetch).
+To update it, bump `GOOGLE_FONTS_REF`. To add another font: download + instance
+it in the Dockerfile, subset it there, and pass it to `embed-svg-font.mjs` in the
 render script — then point `skinparam defaultFontName` at it in the `.puml`
-sources. Fonts carry their own upstream licenses (Jost and Roboto are both under
-the SIL Open Font License, © their authors).
+sources. Jost carries its own upstream license (the SIL Open Font License, © its
+authors).

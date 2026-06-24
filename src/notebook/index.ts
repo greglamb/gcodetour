@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import * as vscode from "vscode";
-import { EXTENSION_NAME, SMALL_ICON_URL } from "../constants";
+import { EXTENSION_NAME, getSmallIconUri } from "../constants";
 import { CodeTour } from "../store";
 import { getStepFileUri, getWorkspaceUri } from "../utils";
 
@@ -46,7 +46,7 @@ class CodeTourNotebookProvider implements vscode.NotebookSerializer {
     cells.push(
       new vscode.NotebookCellData(
         1,
-        `## ![Icon](${SMALL_ICON_URL})&nbsp;&nbsp; gCodeTour (${tour.title}) - ${
+        `## ![Icon](${getSmallIconUri()})&nbsp;&nbsp; gCodeTour (${tour.title}) - ${
           steps.length
         } steps\n\n${tour.description === undefined ? "" : tour.description}`,
         "markdown"

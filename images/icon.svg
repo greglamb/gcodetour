@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- gCodeTour extension icon: a guided tour route leading to a destination pin -->
+  <!-- Gold #FFD700 glyph on a transparent background -->
+
+  <!-- Tour route: a dotted trail whose dots read as the tour's steps -->
+  <path d="M24 104 C 36 82, 58 96, 80 84"
+        fill="none" stroke="#FFD700" stroke-width="10"
+        stroke-linecap="round" stroke-dasharray="0.1 20"/>
+
+  <!-- Destination map pin (teardrop with a hole, evenodd fill rule) -->
+  <path fill-rule="evenodd" fill="#FFD700"
+        d="M86 94 C 70 67, 62 61, 62 44 a24 24 0 1 1 48 0 c0 17 -8 23 -24 50 Z
+           M86 44 m-9 0 a9 9 0 1 0 18 0 a9 9 0 1 0 -18 0 Z"/>
+</svg>

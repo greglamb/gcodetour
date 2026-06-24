@@ -9,7 +9,6 @@ import { saveTour } from "../recorder/commands";
 import { CodeTour, store } from "../store";
 import {
   endCurrentCodeTour,
-  exportTour,
   moveCurrentCodeTourBackward,
   moveCurrentCodeTourForward,
   selectTour,
@@ -243,26 +242,6 @@ export function registerPlayerCommands() {
       );
     }
   });
-
-  vscode.commands.registerCommand(
-    `${EXTENSION_NAME}.exportTour`,
-    async (node: CodeTourNode) => {
-      const uri = await vscode.window.showSaveDialog({
-        filters: {
-          Tours: ["tour"]
-        },
-        saveLabel: "Export Tour"
-      });
-
-      if (!uri) {
-        return;
-      }
-
-      const contents = await exportTour(node.tour);
-      const bytes = new TextEncoder().encode(contents);
-      vscode.workspace.fs.writeFile(uri, bytes);
-    }
-  );
 
   function setShowMarkers(showMarkers: boolean) {
     store.showMarkers = showMarkers;

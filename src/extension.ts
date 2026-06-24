@@ -4,6 +4,7 @@
 import { configure } from "mobx";
 import * as vscode from "vscode";
 import { initializeApi } from "./api";
+import { initializeIcons } from "./constants";
 import { hasUpstreamConflict, UPSTREAM_EXTENSION_ID } from "./conflict";
 import { initializeGitApi } from "./git";
 import { registerLiveShareModule } from "./liveShare";
@@ -80,6 +81,9 @@ export async function activate(context: vscode.ExtensionContext) {
   // Isolate this extension's MobX instance from any other copies of MobX
   // that might be loaded in the same extension host process.
   configure({ isolateGlobalState: true });
+
+  // Resolve icon assets relative to this extension's install location.
+  initializeIcons(context.extensionUri);
 
   // gCodeTour shares the original CodeTour's command/view IDs, so the two can't
   // coexist (duplicate command registration throws). If the original is also

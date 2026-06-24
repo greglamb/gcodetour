@@ -1,12 +1,11 @@
 // Embeds one or more webfonts into a rendered SVG as @font-face rules so the
 // diagram displays in those fonts in any viewer (our webview included) without
 // the reader having them installed. Diagrams reference a font by name (via
-// `skinparam defaultFontName <name>`); this supplies the glyphs. We embed both
-// the default (Jost) and Roboto, so a diagram authored in either displays right.
+// `skinparam defaultFontName <name>`); this supplies the glyphs. We embed the
+// default diagram font (Jost) so it displays right in any viewer.
 //
 // Usage: node embed-svg-font.mjs <svg> <Family:regular.woff2:bold.woff2> [...more]
-// e.g.   node embed-svg-font.mjs d.svg Jost:jost-400.woff2:jost-700.woff2 \
-//                                       Roboto:roboto-400.woff2:roboto-700.woff2
+// e.g.   node embed-svg-font.mjs d.svg Jost:jost-400.woff2:jost-700.woff2
 // (invoked by render-diagrams.sh next to it; not run directly)
 // Idempotent: re-running on an already-embedded SVG is a no-op.
 import { readFileSync, writeFileSync } from "node:fs";

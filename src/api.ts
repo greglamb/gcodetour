@@ -4,7 +4,6 @@
 import { ExtensionContext } from "vscode";
 import {
   endCurrentCodeTour,
-  exportTour,
   onDidEndTour,
   onDidStartTour,
   promptForTour,
@@ -17,7 +16,6 @@ import {
 export function initializeApi(context: ExtensionContext) {
   return {
     endCurrentTour: endCurrentCodeTour,
-    exportTour,
     onDidStartTour,
     onDidEndTour,
     promptForTour: promptForTour.bind(null, context.globalState),

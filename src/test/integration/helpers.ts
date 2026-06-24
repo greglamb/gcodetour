@@ -12,7 +12,6 @@ export const EXTENSION_ID = "greglamb.gcodetour";
  */
 export interface CodeTourApi {
   endCurrentTour: (...args: any[]) => any;
-  exportTour: (...args: any[]) => any;
   onDidStartTour: (listener: (args: [any, number]) => any) => {
     dispose(): void;
   };

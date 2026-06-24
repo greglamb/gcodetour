@@ -1,8 +1,8 @@
-# gCodeTour 🗺️
+# <img src="images/icon.png" alt="" width="32" height="32" align="top"> gCodeTour
 
 > **Note:** This is a community-maintained fork of [microsoft/codetour](https://github.com/microsoft/codetour), maintained by [Greg Lamb](https://github.com/greglamb). It is **not** affiliated with, sponsored by, or endorsed by Microsoft. For the original, upstream project, see [github.com/microsoft/codetour](https://github.com/microsoft/codetour). This fork is distributed under the same [MIT license](LICENSE.txt).
 
-gCodeTour is a Visual Studio Code extension, which allows you to record and play back guided walkthroughs of your codebases. It's like a table of contents, that can make it easier to onboard (or re-board!) to a new project/feature area, visualize bug reports, or understand the context of a code review/PR change. A "code tour" is simply a series of interactive steps, each of which are associated with a specific directory, or file/line, and include a description of the respective code. This allows developers to clone a repo, and then immediately start **learning it**, without needing to refer to a `CONTRIBUTING.md` file and/or rely on help from others. Tours can either be checked into a repo, to enable sharing with other contributors, or [exported](#exporting-tours) to a "tour file", which allows anyone to replay the same tour, without having to clone any code to do it!
+gCodeTour is a Visual Studio Code extension, which allows you to record and play back guided walkthroughs of your codebases. It's like a table of contents, that can make it easier to onboard (or re-board!) to a new project/feature area, visualize bug reports, or understand the context of a code review/PR change. A "code tour" is simply a series of interactive steps, each of which are associated with a specific directory, or file/line, and include a description of the respective code. This allows developers to clone a repo, and then immediately start **learning it**, without needing to refer to a `CONTRIBUTING.md` file and/or rely on help from others. Tours can either be checked into a repo, to enable sharing with other contributors, or [saved to a standalone tour file](#exporting-tours) outside the workspace.
 
 <img width="800px" src="https://user-images.githubusercontent.com/116461/76165260-c6c00500-6112-11ea-9cda-0a6cb9b72e8f.gif" />
 
@@ -280,15 +280,7 @@ For an example, refer to the `.tours/intro.tour` and `.tours/diagram-demo.tour` 
 
 By default, when you record a tour, it is written to the currently open workspace. This makes it easy to check-in the tour and share it with the rest of the team. However, there may be times where you want to record a tour for yourself, or a tour to help explain a one-off to someone, and in those situations, you might not want to check the tour into the repo.
 
-To support this scenario, when you start recording a new tour, you can click the `Save tour as...` button in the upper-right side of the dialog that asks for the title of the tour. This wll allow you to select the file that the new tour will be written to, so that it isn't persisted to the workspace. Furthermore, you can record a tour as usual, and then when done, you can right-click it in the `gCodeTour` tree and select `Export Tour...`. This will allow you to save the tour to a new location, and then you can delete the tour file from your repo. When you export a tour, the tour file itself will embed the contents of all files needed by the tour, which ensures that someone can play it back, regardless if the have the respective code available locally. This enables a powerful form of collaboration.
-
-<img width="700px" src="https://user-images.githubusercontent.com/116461/77705325-9682be00-6f7c-11ea-9532-6975b19b8fcb.gif" />
-
-### GitHub Gists
-
-If you install the [GistPad](https://aka.ms/gistpad) extension, then you'll see an additional `Export Tour to Gist...` option added to the `gCodeTour` tree. This lets you export the tour file to a new/existing gist, which allows you to easily create your own private tours and/or create tours that can be shared with others on your team.
-
-Once a tour is exported as a gist, you can right-click the `main.tour` file in the `GistPad` tree, and select `Copy GitHub URL`. If you send that to someone, and they run the `gCodeTour: Open Tour URL...` command, then they'll be able to take the exact same tour, regardless if they have the code locally available or not.
+To support this scenario, when you start recording a new tour, you can click the `Save tour as...` button in the upper-right side of the dialog that asks for the title of the tour. This will allow you to select the file that the new tour will be written to, so that it isn't persisted to the workspace.
 
 ## Starting Tours
 
@@ -451,8 +443,6 @@ In order to enable other extensions to contribute/manage their own code tours, t
 - `startTourByUri(tourUri: vscode.Uri, stepNumber?: number = 0): void` - Same as above, but allows specifying a file `Uri`, and optionally, a step number.
 
 - `endCurrentTour(): void` - Ends the currently running tour (if there is one). Note that this is simply a programatic way to end the tour, and the end-user can also choose to end the tour using either the command palette (running the `gCodeTour: End Tour` command) or comment UI (clicking the red square, stop icon) as usual.
-
-- `exportTour(tour: CodeTour): Promise<string>` - Exports a `CodeTour` instance into a fully-embedded tour file, that can then be written to some persistent storage (e.g. a GitHub Gist).
 
 In addition to the aforementioned functions, the extension API also allows subscribing to the following tour events:
 

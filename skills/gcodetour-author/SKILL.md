@@ -1,12 +1,12 @@
 ---
 name: gcodetour-author
-version: 0.2606.2401
+version: 0.2606.2402
 description: Author CodeTour walkthrough files (.tour JSON) that explain or onboard someone to a codebase, directly inside VS Code. Use this whenever the user wants to create, generate, or update a guided code tour, a codebase walkthrough, an onboarding tour, or a CodeTour file — or when they ask to "explain this codebase as a tour," "make a walkthrough of how X works," "document the request flow as steps," or point at an unfamiliar repo and ask for a guided introduction. Also use when editing existing .tour files or fixing tour drift. Can additionally generate synchronized architecture/flow diagrams (C4-PlantUML and activity swim lanes) that highlight in sync with the tour. Produces schema-valid .tour files anchored by regex pattern for resilience.
 ---
 
 # gCodeTour Author
 
-*Skill version 0.2606.2401* — to check what's installed on a machine, read the top of this file (`head SKILL.md`).
+*Skill version 0.2606.2402* — to check what's installed on a machine, read the top of this file (`head SKILL.md`).
 
 Generate schema-valid CodeTour `.tour` files that walk a reader through a codebase step by step. The reader plays the tour back in VS Code (the CodeTour extension) and steps through annotated files with `Cmd/Ctrl + →`.
 
@@ -91,7 +91,7 @@ PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, o
 - **C4 diagrams** already bake a white background automatically — nothing to do.
 - **Activity / swim-lane diagrams** are transparent by default, so add `skinparam backgroundColor <color>` right after the `!theme` line — `#FFFFFF` for the default `bluegray` (or any light theme); a dark color (e.g. `#1B1B1B`) only if you switched to a dark theme. Use `skinparam backgroundColor`, not a hand-drawn full-canvas rectangle — you don't know the canvas size ahead of time, and the skinparam is the idiomatic one-liner.
 
-**Fonts.** Diagrams default to **Jost** — add `skinparam defaultFontName Jost` (after the `!theme`/`!include`). **Roboto** is also bundled, so `skinparam defaultFontName Jost` works too. The render pipeline installs both into the renderer image (so PlantUML *measures* boxes with the real font) and embeds a subset of **both** into every SVG (so it *displays* correctly in any viewer, even if the reader doesn't have the font). To use yet another font, add it to the renderer Dockerfile (fetch + instance + subset) and embed it — see `scripts/renderer/README.md`; naming a font the renderer doesn't install makes measurement and display disagree. Name a bundled font **only** when you render with this pipeline; if you skip the renderer, drop the `skinparam` so measurement and display agree on the default.
+**Fonts.** Diagrams use **Jost** — add `skinparam defaultFontName Jost` (after the `!theme`/`!include`). The render pipeline installs Jost into the renderer image (so PlantUML *measures* boxes with the real font) and embeds a subset of it into every SVG (so it *displays* correctly in any viewer, even if the reader doesn't have the font). To use another font, add it to the renderer Dockerfile (fetch + instance + subset) and embed it — see `scripts/renderer/README.md`; naming a font the renderer doesn't install makes measurement and display disagree. Name the bundled font **only** when you render with this pipeline; if you skip the renderer, drop the `skinparam` so measurement and display agree on the default.
 
 ### Choosing a diagram type
 

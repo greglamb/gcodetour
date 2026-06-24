@@ -12,12 +12,7 @@ import {
 import { CodeTour, store } from ".";
 import { EXTENSION_NAME, FS_SCHEME, FS_SCHEME_CONTENT } from "../constants";
 import { startPlayer, stopPlayer } from "../player";
-import {
-  getStepFileUri,
-  getWorkspaceKey,
-  getWorkspaceUri,
-  readUriContents
-} from "../utils";
+import { getWorkspaceKey, getWorkspaceUri } from "../utils";
 import { progress } from "./storage";
 
 const CAN_EDIT_TOUR_KEY = `${EXTENSION_NAME}:canEditTour`;
@@ -145,11 +140,6 @@ export async function moveCurrentCodeTourForward() {
   _onDidStartTour.fire([store.activeTour!.tour, store.activeTour!.step]);
 }
 
-async function isCodeSwingWorkspace(uri: Uri) {
-  const files = await workspace.findFiles("codeswing.json");
-  return files && files.length > 0;
-}
-
 function isLiveShareWorkspace(uri: Uri) {
   return (
     uri.path.endsWith("Visual Studio Live Share.code-workspace") ||
@@ -169,8 +159,7 @@ export async function promptForTour(
     !isLiveShareWorkspace(workspaceRoot) &&
     workspace
       .getConfiguration(EXTENSION_NAME)
-      .get("promptForWorkspaceTours", true) &&
-    !isCodeSwingWorkspace(workspaceRoot)
+      .get("promptForWorkspaceTours", true)
   ) {
     globalState.update(key, true);
 
@@ -206,38 +195,6 @@ export async function startDefaultTour(
   } else {
     return selectTour(tours, workspaceRoot, step);
   }
-}
-
-export async function exportTour(tour: CodeTour) {
-  const newTour: Partial<CodeTour> = {
-    ...tour
-  };
-
-  if (newTour.steps) {
-    newTour.steps = await Promise.all(
-      newTour.steps.map(async step => {
-        if (step.contents || step.uri || !step.file) {
-          return step;
-        }
-
-        const workspaceRoot = getWorkspaceUri(tour);
-        const stepFileUri = await getStepFileUri(step, workspaceRoot, tour.ref);
-        const contents = await readUriContents(stepFileUri);
-
-        delete step.markerTitle;
-
-        return {
-          ...step,
-          contents
-        };
-      })
-    );
-  }
-
-  delete newTour.id;
-  delete newTour.ref;
-
-  return JSON.stringify(newTour, null, 2);
 }
 
 export async function recordTour(workspaceRoot: Uri) {

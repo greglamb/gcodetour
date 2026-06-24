@@ -13,8 +13,6 @@ import { CodeTour, CodeTourStep, store } from "../store";
 import {
   EDITING_KEY,
   endCurrentCodeTour,
-  exportTour,
-  onDidEndTour,
   startCodeTour
 } from "../store/actions";
 import { getActiveWorkspacePath, getRelativePath } from "../utils";
@@ -215,22 +213,6 @@ export function registerRecorderCommands() {
         if (!uri) {
           return;
         }
-
-        const disposeEndTourHandler = onDidEndTour(async tour => {
-          if (tour.id === decodeURIComponent(uri.toString())) {
-            disposeEndTourHandler.dispose();
-
-            if (
-              await vscode.window.showInformationMessage(
-                "Would you like to export this tour?",
-                "Export Tour"
-              )
-            ) {
-              const content = await exportTour(tour);
-              vscode.workspace.fs.writeFile(uri, Buffer.from(content));
-            }
-          }
-        });
 
         recordTourInternal(uri, workspaceRoot);
       });

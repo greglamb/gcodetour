@@ -4,12 +4,12 @@
 #
 # Converts every `*.puml` in a diagram directory to a sibling `*.svg` using a
 # Kroki renderer image (built from the `renderer/` dir next to this script). That
-# image fetches the diagram fonts (Jost default + Roboto) from a pinned
-# google/fonts commit, instances static weights, and subsets each to a compact
-# woff2. C4-PlantUML is the stdlib bundled inside the Kroki/PlantUML image
-# (`!include <C4/...>`), so no C4 files are vendored and nothing is fetched at
-# render time. After each render BOTH fonts' woff2 are embedded into the SVG (as
-# @font-face) so it displays correctly in any viewer, whichever font it uses.
+# image fetches the diagram font (Jost) from a pinned google/fonts commit,
+# instances static weights, and subsets it to a compact woff2. C4-PlantUML is
+# the stdlib bundled inside the Kroki/PlantUML image (`!include <C4/...>`), so no
+# C4 files are vendored and nothing is fetched at render time. After each render
+# the font's woff2 is embedded into the SVG (as @font-face) so it displays
+# correctly in any viewer.
 #
 # This script is self-contained: it finds `renderer/` and `embed-svg-font.mjs`
 # relative to its own location, so it works whether it lives in this repo or is
@@ -87,14 +87,14 @@ echo "Building renderer image $RENDERER_TAG (fonts from pinned google/fonts) ...
 docker build -t "$RENDERER_TAG" "$RENDERER_DIR"
 
 # --- Extract the embed woff2 from the built image (nothing committed) ----------
-# Both the default font (Jost) and Roboto are embedded into every SVG, so a
-# diagram authored in either displays correctly.
+# The diagram font (Jost) is embedded into every SVG so it displays correctly in
+# any viewer.
 WEBFONT_DIR="$(mktemp -d)"
 extract_font() {
   docker run --rm --entrypoint cat "$RENDERER_TAG" \
     "/usr/local/share/gcodetour-webfonts/$1" >"$WEBFONT_DIR/$1"
 }
-for woff2 in jost-400.woff2 jost-700.woff2 roboto-400.woff2 roboto-700.woff2; do
+for woff2 in jost-400.woff2 jost-700.woff2; do
   extract_font "$woff2"
 done
 
@@ -145,8 +145,7 @@ for puml in "$DIAGRAM_DIR"/*.puml; do
     -o "$svg" -w '%{http_code}')" || code="000"
   if [ "$code" = "200" ]; then
     node "$EMBED_SCRIPT" "$svg" \
-      "Jost:$WEBFONT_DIR/jost-400.woff2:$WEBFONT_DIR/jost-700.woff2" \
-      "Roboto:$WEBFONT_DIR/roboto-400.woff2:$WEBFONT_DIR/roboto-700.woff2"
+      "Jost:$WEBFONT_DIR/jost-400.woff2:$WEBFONT_DIR/jost-700.woff2"
     echo "ok"
     rendered=$((rendered + 1))
   else

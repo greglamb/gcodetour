@@ -3,19 +3,27 @@
 
 import { reaction } from "mobx";
 import * as vscode from "vscode";
-import { FS_SCHEME_CONTENT, ICON_URL } from "../constants";
+import { FS_SCHEME_CONTENT, getIconUri } from "../constants";
 import { CodeTourStepTuple, store } from "../store";
 import { getStepFileUri, getWorkspaceUri } from "../utils";
 
 const DISABLED_SCHEMES = [FS_SCHEME_CONTENT, "comment"];
 
-const TOUR_DECORATOR = vscode.window.createTextEditorDecorationType({
-  gutterIconPath: vscode.Uri.parse(ICON_URL),
-  gutterIconSize: "contain",
-  overviewRulerColor: "rgb(246,232,154)",
-  overviewRulerLane: vscode.OverviewRulerLane.Right,
-  rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
-});
+// Created lazily so the icon URI is resolved only after `initializeIcons` has
+// run during activation (the gutter icon now ships with the extension).
+let tourDecorator: vscode.TextEditorDecorationType | undefined;
+function getTourDecorator(): vscode.TextEditorDecorationType {
+  if (!tourDecorator) {
+    tourDecorator = vscode.window.createTextEditorDecorationType({
+      gutterIconPath: getIconUri(),
+      gutterIconSize: "contain",
+      overviewRulerColor: "rgb(246,232,154)",
+      overviewRulerLane: vscode.OverviewRulerLane.Right,
+      rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
+    });
+  }
+  return tourDecorator;
+}
 
 export async function getTourSteps(
   editor: vscode.TextEditor
@@ -96,12 +104,12 @@ export async function updateDecorations(
   const ranges = store.activeEditorSteps!.map(
     ([, , , line]) => new vscode.Range(line!, 0, line!, 1000)
   );
-  editor.setDecorations(TOUR_DECORATOR, ranges);
+  editor.setDecorations(getTourDecorator(), ranges);
 }
 
 function clearDecorations(editor: vscode.TextEditor) {
   store.activeEditorSteps = undefined;
-  editor.setDecorations(TOUR_DECORATOR, []);
+  editor.setDecorations(getTourDecorator(), []);
 }
 
 let disposables: vscode.Disposable[] = [];

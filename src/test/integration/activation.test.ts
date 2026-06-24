@@ -35,7 +35,6 @@ describe("CodeTour activation", () => {
       "endCurrentTour",
       "recordTour",
       "selectTour",
-      "exportTour",
       "promptForTour"
     ] as const) {
       assert.equal(

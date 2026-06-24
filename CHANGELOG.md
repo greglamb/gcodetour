@@ -4,6 +4,13 @@
 - Automatically set the "pattern" record mode when you create a new tour, and select `None` for the git ref
 - Added support for opening a `*.tour` file in the VS Code notebook editor (Insiders only)
 
+## v0.2606.2402 (06/24/26)
+
+- **Removed integrations with the original author's companion extensions.** gCodeTour no longer wires into CodeStatus (`lostintangent.codestatus`), special-cases CodeSwing workspaces, or carries the GistPad-oriented "Export Tour" flow — none of which did anything useful unless you also had those other extensions installed. The generic export command and its public `exportTour` API were removed along with it.
+- **Icons now ship inside the extension.** The gutter, tree, and comment icons were fetched at runtime from the upstream `vsls-contrib/code-tour` repo over a CDN; they're now resolved from local assets bundled in the `.vsix`, so the extension no longer depends on a remote repository (and works offline).
+- **New extension icon** — a gold tour-route-to-destination-pin mark.
+- **Diagrams ship a single font (Jost).** The diagram render pipeline previously bundled and embedded Roboto alongside Jost; it now installs and embeds Jost only — smaller SVGs and one consistent look.
+
 ## v0.2606.2401 (06/24/26)
 
 - **Diagram panel on an empty workbench, fixed properly.** When a tour started with no editors open, the panel still didn't render: on an empty workbench `ViewColumn.Beside` collapses into the only column, so the panel landed in the same group as the step's editor and sat hidden behind it — and a webview that is never shown never loads its client, so the SVG never rendered. The previous "move it beside after the editor opens" approach reloaded the webview's iframe (dropping the rendered diagram). The panel now **waits for the step's editor group to exist, then opens beside it** — created visible in its own column and never moved, so the diagram renders and stays side by side with the code.

@@ -80,8 +80,7 @@ export interface ActiveTour {
   // links, the active tour might need
   // the context of its sibling tours, if
   // they're coming from somewhere other
-  // then the active workspace (e.g. a
-  // GistPad-managed repo).
+  // than the active workspace.
   tours?: CodeTour[];
 }
 

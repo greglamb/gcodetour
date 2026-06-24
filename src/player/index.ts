@@ -22,7 +22,7 @@ import {
   window,
   workspace
 } from "vscode";
-import { SMALL_ICON_URL } from "../constants";
+import { getSmallIconUri } from "../constants";
 import { CodeTour, store } from "../store";
 import { initializeStorage } from "../store/storage";
 import {
@@ -33,7 +33,6 @@ import {
   getStepLabel,
   getTourTitle
 } from "../utils";
-import { registerCodeStatusModule } from "./codeStatus";
 import { registerPlayerCommands } from "./commands";
 import { registerDecorators } from "./decorator";
 import { registerDiagramModule } from "./diagram";
@@ -108,7 +107,7 @@ export class CodeTourComment implements Comment {
   public contextValue: string = "";
   public author: CommentAuthorInformation = {
     name: CONTROLLER_LABEL,
-    iconPath: Uri.parse(SMALL_ICON_URL)
+    iconPath: getSmallIconUri()
   };
   public body: MarkdownString;
 
@@ -477,7 +476,6 @@ export function registerPlayerModule(context: ExtensionContext) {
   registerTextDocumentContentProvider();
   registerStatusBar();
   registerDecorators();
-  registerCodeStatusModule();
 
   initializeStorage(context);
 
