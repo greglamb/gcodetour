@@ -4,6 +4,11 @@
 - Automatically set the "pattern" record mode when you create a new tour, and select `None` for the git ref
 - Added support for opening a `*.tour` file in the VS Code notebook editor (Insiders only)
 
+## v0.2606.2307 (06/23/26)
+
+- **Diagram dim** now desaturates inactive elements to grey instead of lightening them. Reducing opacity washed out white (or dark) label text on a solid-fill box of any color — blue, red, green — making inactive nodes unreadable. Grey-out keeps the box's darkness, so the text keeps its contrast, and it reads like the "inactive grey" the C4 themes already use. Fixes both C4 and activity/swim-lane diagrams.
+- **Authoring fix:** the bundled C4 demo diagrams (`gcodetour-arch`, `gcodetour-flow`) had `!theme` placed before `!include <C4/…>`, which the include resets — so they rendered outlined/white instead of solid `C4_blue_new`. Reordered (theme after include) so they render solid blue (matching the bluegray activity default), and documented the ordering in the `gcodetour-author` skill.
+
 ## v0.2606.2306 (06/23/26)
 
 - **Diagram highlight/dim** now treats an activity/swim-lane node as a whole unit (its box **and** its label), matching how C4 elements already behaved. Previously only the label was dimmed while the box stayed fully opaque, so inactive nodes on solid-fill themes became unreadable "blank boxes." Now the highlighted node clearly stands out (box border + glow) and inactive nodes fade together while staying legible. Also softened the dim (0.35 → 0.5) so inactive elements remain readable.

@@ -72,9 +72,10 @@ PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, o
 
 `plain` · `amiga` · `aws-orange` · `black-knight` · `bluegray` · `blueprint` · `carbon-gray` · `cerulean` · `cerulean-outline` · `cloudscape-design` · `crt-amber` · `crt-green` · `cyborg` · `cyborg-outline` · `hacker` · `lightgray` · `mars` · `materia` · `materia-outline` · `metal` · `mimeograph` · `minty` · `mono` · `reddress-darkblue` · `reddress-darkgreen` · `reddress-darkorange` · `reddress-darkred` · `reddress-lightblue` · `reddress-lightgreen` · `reddress-lightorange` · `reddress-lightred` · `sandstone` · `silver` · `sketchy` · `sketchy-outline` · `spacelab` · `spacelab-white` · `sunlust` · `superhero` · `superhero-outline` · `toy` · `united` · `vibrant` (and `_none_` to reset to the bare default).
 
-**C4 diagrams** ignore the PlantUML `!theme` gallery above (C4 paints its own element colors), but C4-PlantUML has its **own** theme gallery — default to `C4_blue_new`, applied with the `from` form:
+**C4 diagrams** ignore the PlantUML `!theme` gallery above (C4 paints its own element colors), but C4-PlantUML has its **own** theme gallery — default to `C4_blue_new`, applied with the `from` form. **Place the `!theme` line _after_ the `!include <C4/…>`** — the include resets element styling, so a theme placed before it renders outlined/white instead of solid:
 
 ```
+!include <C4/C4_Container>
 !theme C4_blue_new from <C4/themes>
 ```
 

@@ -1,9 +1,11 @@
 @startuml
 ' C4 Dynamic view: how starting/navigating a tour drives the player and the
 ' diagram panel. Render: skills/gcodetour-author/scripts/render-diagrams.sh
-' C4_blue_new pairs with the materia-outline activity default (blue, outlined, white bg).
-!theme C4_blue_new from <C4/themes>
+' Apply the C4 theme AFTER the include — the include resets element styling, so a
+' theme placed before it renders outlined/white instead of solid.
+' C4_blue_new (solid blue) pairs with the bluegray activity default.
 !include <C4/C4_Dynamic>
+!theme C4_blue_new from <C4/themes>
 skinparam defaultFontName Roboto
 
 LAYOUT_WITH_LEGEND()
