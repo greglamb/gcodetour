@@ -6,7 +6,7 @@
 ' C4_blue_new (solid blue) pairs with the bluegray activity default.
 !include <C4/C4_Dynamic>
 !theme C4_blue_new from <C4/themes>
-skinparam defaultFontName Roboto
+skinparam defaultFontName Jost
 
 LAYOUT_WITH_LEGEND()
 

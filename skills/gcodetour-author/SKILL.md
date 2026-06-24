@@ -88,7 +88,7 @@ PlantUML + **C4-PlantUML** only — do not reach for Mermaid, Structurizr, D2, o
 - **C4 diagrams** already bake a white background automatically — nothing to do.
 - **Activity / swim-lane diagrams** are transparent by default, so add `skinparam backgroundColor <color>` right after the `!theme` line — `#FFFFFF` for the default `bluegray` (or any light theme); a dark color (e.g. `#1B1B1B`) only if you switched to a dark theme. Use `skinparam backgroundColor`, not a hand-drawn full-canvas rectangle — you don't know the canvas size ahead of time, and the skinparam is the idiomatic one-liner.
 
-**Fonts.** Diagrams use **Roboto** — add `skinparam defaultFontName Roboto` (after the `!theme`/`!include`). The render pipeline installs Roboto into the renderer image via `fnt` (so PlantUML *measures* boxes with it) and embeds a subset into every SVG (so it *displays* in Roboto in any viewer, even if the reader doesn't have it). To use a different font, add it to `scripts/renderer/fonts.list` first (see `scripts/renderer/README.md`) — naming a font the renderer doesn't install makes measurement and display disagree. Name Roboto **only** when you render with this bundled pipeline; if you skip the renderer, drop the `skinparam` so measurement and display agree on the default font.
+**Fonts.** Diagrams default to **Jost** — add `skinparam defaultFontName Jost` (after the `!theme`/`!include`). **Roboto** is also bundled, so `skinparam defaultFontName Jost` works too. The render pipeline installs both into the renderer image (so PlantUML *measures* boxes with the real font) and embeds a subset of **both** into every SVG (so it *displays* correctly in any viewer, even if the reader doesn't have the font). To use yet another font, add it to the renderer (fnt or the Dockerfile) and embed it — see `scripts/renderer/README.md`; naming a font the renderer doesn't install makes measurement and display disagree. Name a bundled font **only** when you render with this pipeline; if you skip the renderer, drop the `skinparam` so measurement and display agree on the default.
 
 ### Choosing a diagram type
 
@@ -106,7 +106,7 @@ Touring a half-built or in-progress codebase is one of the most common reasons t
 @startuml
 !include <C4/C4_Container>
 !theme C4_blue_new from <C4/themes>
-skinparam defaultFontName Roboto
+skinparam defaultFontName Jost
 AddElementTag("done",    $bgColor="#2E7D32", $fontColor="#FFFFFF", $legendText="implemented")
 AddElementTag("partial", $bgColor="#F9A825", $fontColor="#000000", $legendText="partial / stubbed")
 AddElementTag("todo",    $bgColor="#C62828", $fontColor="#FFFFFF", $legendText="not implemented")
@@ -135,7 +135,7 @@ PlantUML has no stable element IDs, so tag every element a step will target with
 @startuml
 !theme bluegray
 skinparam backgroundColor #FFFFFF
-skinparam defaultFontName Roboto
+skinparam defaultFontName Jost
 |Developer|
 start
 :[[ct://el/open Open a workspace]];

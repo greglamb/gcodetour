@@ -1,11 +1,14 @@
-# Fonts to install into the renderer image, by name, via `fnt` (apt for fonts).
-# One name per line; blank lines and #-comments are ignored. The render script's
-# image build runs `fnt install <name>` for each. The PRIMARY font (the one
-# diagrams reference with `skinparam defaultFontName` and that gets embedded into
-# every SVG) is Roboto — keep its package here; add more for measurement as needed.
+# Fonts to install into the renderer image via `fnt` (apt for fonts), one name
+# per line; blank lines and #-comments are ignored. Both these fonts are also
+# subsetted and embedded into every SVG (see Dockerfile) so diagrams display in
+# them in any viewer. Add more here for measurement as needed.
 #
-# Note: `fnt` always fetches the latest font from the network at build time — it
-# does not pin versions, so this renderer is intentionally NOT a reproducible,
-# offline, digest-pinned build (unlike the digest-pinned base image). See
-# README.md.
+# Note: the DEFAULT diagram font is **Jost**, which is NOT in fnt's catalog (nor
+# apt) — the Dockerfile fetches it directly from Google Fonts. Roboto stays
+# available (kept here) and is also embedded; authors can opt into it with
+# `skinparam defaultFontName Roboto`.
+#
+# `fnt` always fetches the latest font from the network at build time — it does
+# not pin versions, so this renderer is intentionally NOT a reproducible,
+# offline, digest-pinned build (unlike the digest-pinned base image). See README.md.
 fonts-roboto-unhinted

@@ -87,13 +87,16 @@ echo "Building renderer image $RENDERER_TAG (fnt installs renderer/fonts.list) .
 docker build -t "$RENDERER_TAG" "$RENDERER_DIR"
 
 # --- Extract the embed woff2 from the built image (nothing committed) ----------
+# Both the default font (Jost) and Roboto are embedded into every SVG, so a
+# diagram authored in either displays correctly.
 WEBFONT_DIR="$(mktemp -d)"
-FONT_REGULAR="$WEBFONT_DIR/roboto-400.woff2"
-FONT_BOLD="$WEBFONT_DIR/roboto-700.woff2"
-docker run --rm --entrypoint cat "$RENDERER_TAG" \
-  /usr/local/share/gcodetour-webfonts/roboto-400.woff2 >"$FONT_REGULAR"
-docker run --rm --entrypoint cat "$RENDERER_TAG" \
-  /usr/local/share/gcodetour-webfonts/roboto-700.woff2 >"$FONT_BOLD"
+extract_font() {
+  docker run --rm --entrypoint cat "$RENDERER_TAG" \
+    "/usr/local/share/gcodetour-webfonts/$1" >"$WEBFONT_DIR/$1"
+}
+for woff2 in jost-400.woff2 jost-700.woff2 roboto-400.woff2 roboto-700.woff2; do
+  extract_font "$woff2"
+done
 
 # --- Start the renderer -------------------------------------------------------
 # unsafe mode lets PlantUML resolve the bundled C4 stdlib includes/themes; our
@@ -141,7 +144,9 @@ for puml in "$DIAGRAM_DIR"/*.puml; do
     -H 'Content-Type: text/plain' --data-binary "@$puml" \
     -o "$svg" -w '%{http_code}')" || code="000"
   if [ "$code" = "200" ]; then
-    node "$EMBED_SCRIPT" "$svg" "$FONT_REGULAR" "$FONT_BOLD"
+    node "$EMBED_SCRIPT" "$svg" \
+      "Jost:$WEBFONT_DIR/jost-400.woff2:$WEBFONT_DIR/jost-700.woff2" \
+      "Roboto:$WEBFONT_DIR/roboto-400.woff2:$WEBFONT_DIR/roboto-700.woff2"
     echo "ok"
     rendered=$((rendered + 1))
   else

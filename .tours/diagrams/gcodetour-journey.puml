@@ -5,8 +5,8 @@
 ' Opaque background so the diagram reads on any VS Code editor theme (the panel
 ' background follows the reader's theme; C4 diagrams bake this automatically).
 skinparam backgroundColor #FFFFFF
-' Roboto is installed into the renderer image and embedded into the SVG.
-skinparam defaultFontName Roboto
+' Jost (default) is installed into the renderer image and embedded into the SVG.
+skinparam defaultFontName Jost
 
 title gCodeTour — developer journey
 

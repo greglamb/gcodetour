@@ -38,24 +38,33 @@ image digest above. (Earlier revisions vendored the C4 `.puml` files and mounted
 them as a PlantUML include path; that's no longer needed.) To move to a different
 C4-PlantUML version, change the pinned Kroki image (whose PlantUML carries it).
 
-## Fonts (`fonts.list`)
+## Fonts (`fonts.list` + Jost)
 
-Diagrams render in **Roboto**. Rather than commit font binaries, the renderer
-image installs fonts with [`fnt`](https://github.com/alexmyczko/fnt) ("apt for
-fonts") from the names listed in [`fonts.list`](./fonts.list) — add a line to
-install more. The image build then does two things, because fonts matter in two
-places:
+The **default** diagram font is **Jost**; **Roboto** is also kept and available.
+Rather than commit font binaries, the renderer image installs them at build time:
 
-1. **Measurement:** installs each listed font (TTF) so PlantUML sizes boxes with
-   Roboto. Without it, PlantUML measures with a DejaVu fallback while the SVG
-   names Roboto — a layout-vs-display mismatch.
-2. **Display:** subsets the primary font (Roboto) to a compact woff2 with
-   `pyftsubset`; [`../render-diagrams.sh`](../render-diagrams.sh) extracts that
-   woff2 from the image and embeds it into every SVG (via
-   [`../embed-svg-font.mjs`](../embed-svg-font.mjs)), so diagrams display in
-   Roboto in any viewer without the reader having it installed.
+- **Roboto** via [`fnt`](https://github.com/alexmyczko/fnt) ("apt for fonts")
+  from the names in [`fonts.list`](./fonts.list).
+- **Jost** directly from Google Fonts — it isn't in fnt's catalog (nor apt). The
+  [`Dockerfile`](./Dockerfile) downloads the variable `Jost[wght].ttf` and uses
+  `fonttools` to instance static **Regular (400)** and **Bold (700)** weights, so
+  fontconfig/PlantUML see a real "Jost" family.
 
-Diagram sources select it with `skinparam defaultFontName Roboto`.
+Fonts matter in two places, so the build handles both for each font:
+
+1. **Measurement:** the static TTFs are installed so PlantUML sizes boxes with
+   the actual font. Without it, PlantUML measures with a DejaVu fallback while the
+   SVG names Jost/Roboto — a layout-vs-display mismatch.
+2. **Display:** each is subsetted to a compact woff2 with `pyftsubset`;
+   [`../render-diagrams.sh`](../render-diagrams.sh) extracts them and embeds
+   **both** into every SVG (via [`../embed-svg-font.mjs`](../embed-svg-font.mjs)),
+   so a diagram in either font displays in any viewer without the reader having
+   it installed.
+
+Diagram sources select the default with `skinparam defaultFontName Jost` (or
+`Roboto` to opt into Roboto). To add another font, install it (fnt or Dockerfile),
+subset it in the Dockerfile, and pass it to `embed-svg-font.mjs` in the render
+script.
 
 **Trade-off (no pinning):** `fnt` always fetches the *latest* font over the
 network at build time, so this renderer is intentionally **not** offline or

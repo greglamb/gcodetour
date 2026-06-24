@@ -6,7 +6,7 @@
 '
 ' Render with: skills/gcodetour-author/scripts/render-diagrams.sh
 !include <C4/C4_Container>
-skinparam defaultFontName Roboto
+skinparam defaultFontName Jost
 
 LAYOUT_WITH_LEGEND()
 
