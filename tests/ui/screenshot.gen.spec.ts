@@ -39,8 +39,22 @@ gen(
       )
       .toBe(true);
 
+    // Close chrome that distracts from the feature (Copilot chat / bottom panel)
+    // FIRST: the chat in the auxiliary bar is ALSO an `iframe.webview`, so closing
+    // it before locating the diagram makes `.first()` land deterministically on
+    // the diagram webview (otherwise the locator flakily resolves to the chat and
+    // finds neither the highlight nor the callout).
+    await evaluateInVSCode(async vscode => {
+      await vscode.commands.executeCommand(
+        "workbench.action.closeAuxiliaryBar"
+      );
+      await vscode.commands.executeCommand("workbench.action.closePanel");
+    });
+    await workbox.waitForTimeout(500);
+
     const webview = workbox
       .frameLocator("iframe.webview")
+      .first()
       .frameLocator("iframe#active-frame");
 
     // Wait until the diagram has rendered, highlighted, and shown its callout.
@@ -48,14 +62,6 @@ gen(
       timeout: 30_000
     });
     await expect(webview.locator("#diagram-callout")).toBeVisible();
-
-    // Close chrome that distracts from the feature (Copilot chat / bottom panel).
-    await evaluateInVSCode(async vscode => {
-      await vscode.commands.executeCommand(
-        "workbench.action.closeAuxiliaryBar"
-      );
-      await vscode.commands.executeCommand("workbench.action.closePanel");
-    });
 
     // Let layout settle, then capture the whole VS Code window (editor + diagram).
     await workbox.waitForTimeout(750);

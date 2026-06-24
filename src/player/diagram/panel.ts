@@ -22,22 +22,14 @@ export class DiagramPanel {
 
   private constructor(
     private readonly extensionUri: Uri,
-    beside: boolean,
+    viewColumn: ViewColumn,
     private readonly onDispose: () => void
   ) {
     const mediaRoot = Uri.joinPath(this.extensionUri, "media", "diagram");
-    // ViewColumn.Beside/Active with an empty workbench (a tour whose first step is
-    // a content/directory step opens no editor) produces no visible panel — the
-    // diagram then only appears after navigating to a step that opens an editor.
-    // Fall back to a concrete column when there's nothing to sit beside.
-    const hasOpenTab = window.tabGroups.all.some(
-      group => group.tabs.length > 0
-    );
-    const viewColumn = !hasOpenTab
-      ? ViewColumn.One
-      : beside
-        ? ViewColumn.Beside
-        : ViewColumn.Active;
+    // The column is chosen by the caller so the panel opens VISIBLE in its own
+    // group (never hidden behind the step's editor — a hidden webview never loads
+    // its client, so the SVG would never render — and never moved after, which
+    // would reload it). preserveFocus keeps the editor focused.
     this.panel = window.createWebviewPanel(
       VIEW_TYPE,
       TITLE,
@@ -67,10 +59,10 @@ export class DiagramPanel {
 
   static create(
     extensionUri: Uri,
-    beside: boolean,
+    viewColumn: ViewColumn,
     onDispose: () => void
   ): DiagramPanel {
-    return new DiagramPanel(extensionUri, beside, onDispose);
+    return new DiagramPanel(extensionUri, viewColumn, onDispose);
   }
 
   /** Posts a message, buffering it (latest-wins) until the client signals ready. */
@@ -85,16 +77,6 @@ export class DiagramPanel {
   /** Surfaces the panel in its existing column, without stealing editor focus. */
   reveal(): void {
     this.panel.reveal(undefined, true);
-  }
-
-  /** The column the panel currently occupies (undefined if not visible). */
-  get viewColumn(): ViewColumn | undefined {
-    return this.panel.viewColumn;
-  }
-
-  /** Moves the panel to the column beside the active group (keeping focus). */
-  revealBeside(): void {
-    this.panel.reveal(ViewColumn.Beside, true);
   }
 
   dispose(): void {

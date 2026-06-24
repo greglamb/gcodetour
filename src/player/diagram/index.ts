@@ -7,7 +7,14 @@
 // dumb view. Reads SVG bytes via `workspace.fs` so it works in both the desktop
 // (node) and web (webworker) extension hosts.
 
-import { commands, ExtensionContext, Uri, window, workspace } from "vscode";
+import {
+  commands,
+  ExtensionContext,
+  Uri,
+  ViewColumn,
+  window,
+  workspace
+} from "vscode";
 import { CodeTour, store } from "../../store";
 import { onDidEndTour, onDidStartTour } from "../../store/actions";
 import { parseDiagramFromStep } from "./model";
@@ -36,21 +43,7 @@ export function registerDiagramModule(context: ExtensionContext): void {
   });
   const endSub = onDidEndTour(() => handleEndTour());
 
-  // On an empty workbench the panel is created before the step's editor opens, so
-  // the editor lands in the panel's column and hides it. When an editor becomes
-  // active in the panel's column, move the panel beside it so both stay visible.
-  const editorSub = window.onDidChangeActiveTextEditor(editor => {
-    if (
-      panel &&
-      editor &&
-      editor.viewColumn !== undefined &&
-      panel.viewColumn === editor.viewColumn
-    ) {
-      panel.revealBeside();
-    }
-  });
-
-  context.subscriptions.push(startSub, endSub, editorSub, {
+  context.subscriptions.push(startSub, endSub, {
     dispose: () => disposePanel()
   });
 }
@@ -98,7 +91,12 @@ async function handleStep(
 
   let created = false;
   if (!panel) {
-    panel = DiagramPanel.create(extensionUri, beside, onPanelDisposed);
+    const viewColumn = await resolveColumn(beside, token);
+    // A newer navigation superseded us while waiting for the editor group.
+    if (token !== renderToken) {
+      return;
+    }
+    panel = DiagramPanel.create(extensionUri, viewColumn, onPanelDisposed);
     created = true;
     setPanelOpen(true);
   }
@@ -138,6 +136,61 @@ function handleEndTour(): void {
   disposePanel();
   currentTourId = null;
   currentPath = null;
+}
+
+// Resolves the column to open the panel in so it lands VISIBLE in its own group
+// and is never moved afterwards (moving a webview between columns reloads its
+// iframe and drops the rendered SVG; a webview that is never shown never loads
+// its client at all).
+//
+// The trap: on an *empty* workbench `ViewColumn.Beside` (and even an explicit
+// `ViewColumn.Two`) collapse to the only column — so the panel lands in the same
+// group as the step's editor, hidden behind it. Every step opens an editor (a
+// real file, or the virtual document a content step renders) in column One, so we
+// wait for that editor to exist first; then `Beside` correctly resolves to a
+// second, visible column.
+async function resolveColumn(
+  beside: boolean,
+  token: number
+): Promise<ViewColumn> {
+  if (!beside) {
+    return ViewColumn.Active;
+  }
+  if (!hasOpenTab()) {
+    await waitForEditorGroup(token);
+  }
+  return ViewColumn.Beside;
+}
+
+function hasOpenTab(): boolean {
+  return window.tabGroups.all.some(group => group.tabs.length > 0);
+}
+
+// Resolves once an editor group exists (so "Beside" has something to sit beside),
+// or this step is superseded, or a defensive timeout elapses — never hangs.
+function waitForEditorGroup(token: number): Promise<void> {
+  return new Promise(resolve => {
+    if (hasOpenTab()) {
+      resolve();
+      return;
+    }
+    let settled = false;
+    const finish = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      sub.dispose();
+      clearTimeout(timer);
+      resolve();
+    };
+    const sub = window.tabGroups.onDidChangeTabs(() => {
+      if (hasOpenTab() || token !== renderToken) {
+        finish();
+      }
+    });
+    const timer = setTimeout(finish, 3000);
+  });
 }
 
 async function readSvg(path: string): Promise<string | null> {

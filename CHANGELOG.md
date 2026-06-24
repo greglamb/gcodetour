@@ -4,6 +4,11 @@
 - Automatically set the "pattern" record mode when you create a new tour, and select `None` for the git ref
 - Added support for opening a `*.tour` file in the VS Code notebook editor (Insiders only)
 
+## v0.2606.2401 (06/24/26)
+
+- **Diagram panel on an empty workbench, fixed properly.** When a tour started with no editors open, the panel still didn't render: on an empty workbench `ViewColumn.Beside` collapses into the only column, so the panel landed in the same group as the step's editor and sat hidden behind it — and a webview that is never shown never loads its client, so the SVG never rendered. The previous "move it beside after the editor opens" approach reloaded the webview's iframe (dropping the rendered diagram). The panel now **waits for the step's editor group to exist, then opens beside it** — created visible in its own column and never moved, so the diagram renders and stays side by side with the code.
+- **Bolder diagram highlight.** The gold border + glow was too subtle in practice. The border is now thicker and uses a non-scaling stroke (so it doesn't thin out on large diagrams), with a wider multi-layer glow, making the active element clearly pop without dimming anything else.
+
 ## v0.2606.2309 (06/23/26)
 
 - Fixed the diagram panel being hidden when a tour is started with **no editors open**. The panel is created before the step's editor opens, so the editor landed in the panel's column and covered it (the diagram showed as a background tab, or not at all). The panel now detects when an editor opens into its column and moves itself beside it — so the editor and diagram sit side by side and the diagram stays visible. (Earlier fix made the tab exist; this makes it actually shown.)

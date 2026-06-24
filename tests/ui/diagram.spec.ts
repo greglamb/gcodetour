@@ -25,10 +25,14 @@ async function startDiagramTour(
     .toBe(true);
 }
 
-// The diagram webview content lives in VS Code's nested webview iframes.
+// The diagram webview content lives in VS Code's nested webview iframes. The
+// `.first()` is load-bearing: a bare `frameLocator("iframe.webview")` in a chain
+// does not resolve reliably here (it intermittently yields zero matches even when
+// the single diagram webview is present and rendered), so pin it to the first.
 function diagramWebview(workbox: any) {
   return workbox
     .frameLocator("iframe.webview")
+    .first()
     .frameLocator("iframe#active-frame");
 }
 
